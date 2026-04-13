@@ -22,8 +22,8 @@ export default defineConfig(({ mode }) => {
               typeof address === 'object' && address ? address.port : port
             const url = `http://${baseURL}:${activePort}/`
 
-            server.config.logger.info(`\n  ➜  Local:   ${url}`)
-            server.config.logger.info(`  ➜  Network: ${url}\n`)
+            server.config.logger.info(`\n  🚀 Launch:   ${url}`)
+            server.config.logger.info('')
           }
         },
       },
