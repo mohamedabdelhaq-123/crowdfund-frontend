@@ -21,7 +21,8 @@ jobs:
             set -e
             cd "${{ secrets.EC2_PROJECT_PATH }}"
 
-            git -C crowdfund-frontend pull --ff-only origin feature/adding-CI-CD
+            git -C crowdfund-frontend fetch origin feature/adding-CI-CD
+            git -C crowdfund-frontend reset --hard origin/feature/adding-CI-CD
 
             if docker compose version >/dev/null 2>&1; then
               docker compose up -d --build frontend
