@@ -4,11 +4,10 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const baseURL = env.VITE_BASE_URL || 'localhost'
-  const allowedHosts = (env.VITE_ALLOWED_HOSTS || baseURL)
+  const allowedHosts = (env.VITE_ALLOWED_HOSTS || 'localhost')
     .split(',')
     .map((host) => host.trim())
     .filter(Boolean)
-  const port = Number(env.VITE_PORT || 5173)
 
   return {
     plugins: [
@@ -17,12 +16,7 @@ export default defineConfig(({ mode }) => {
         name: 'print-base-url',
         configureServer(server) {
           server.printUrls = () => {
-            const address = server.httpServer?.address()
-            const activePort =
-              typeof address === 'object' && address ? address.port : port
-            const url = `http://${baseURL}:${activePort}/`
-
-            server.config.logger.info(`\n  🚀 Launch:   ${url}`)
+            server.config.logger.info(`\n  🚀 Launch:   ${baseURL}`)
             server.config.logger.info('')
           }
         },
@@ -30,7 +24,7 @@ export default defineConfig(({ mode }) => {
     ],
     server: {
       host: '0.0.0.0',
-      port,
+      port: 5173,
       allowedHosts,
     },
   }
