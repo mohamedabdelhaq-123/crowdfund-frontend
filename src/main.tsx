@@ -17,3 +17,5 @@ createRoot(document.getElementById('root')!).render(
     </Provider>
   </StrictMode>,
 );
+
+// use ! to say to ts that 'root' will be in DOM and prevent error about it may be null

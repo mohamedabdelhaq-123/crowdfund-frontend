@@ -1,6 +1,25 @@
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { Home, Compass, UserCircle, LogIn, LogOut } from 'lucide-react';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '../../store/store';
+import { logout } from '../../store/slices/authSlice';
+import toast from 'react-hot-toast';
 
 export const Layout = () => {
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logout()).unwrap();
+      toast.success('Logged out successfully');
+      navigate('/login');
+    } catch {
+      toast.error('Failed to logout');
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <nav className="fixed top-0 w-full z-50 glass-panel">
@@ -33,19 +52,43 @@ export const Layout = () => {
               </Link>
             </div>
           </div>
-          <div className="flex items-center gap-6">
-            <Link
-              to="/login"
-              className="hidden lg:block text-on-surface-variant hover:text-primary transition-colors font-headline text-sm font-semibold tracking-tight"
-            >
-              Log In
-            </Link>
-            <Link
-              to="/create-project"
-              className="signature-gradient text-on-primary px-6 py-2.5 rounded-full font-headline text-sm font-bold tracking-tight hover:opacity-90 transition-all active:scale-95"
-            >
-              Start a Project
-            </Link>
+
+          {/* Desktop Auth Navigation */}
+          <div className="hidden md:flex items-center gap-6">
+            {isAuthenticated ? (
+              <div className="flex items-center gap-4 bg-surface-container-low px-4 py-1.5 rounded-full border border-outline-variant/50 shadow-sm transition-all hover:shadow-md">
+                <Link
+                  to="/profile"
+                  className="flex items-center gap-2 text-on-surface hover:text-primary transition-colors font-headline text-sm font-semibold"
+                >
+                  <UserCircle className="w-5 h-5" />
+                  <span>Profile</span>
+                </Link>
+                <div className="w-[1px] h-4 bg-outline-variant/50"></div>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center text-on-surface-variant hover:text-primary transition-colors p-1 cursor-pointer"
+                  title="Log Out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="text-on-surface-variant hover:text-primary transition-colors font-headline text-sm font-bold tracking-tight"
+                >
+                  Log In
+                </Link>
+                <Link
+                  to="/register"
+                  className="bg-primary text-on-primary hover:bg-primary/90 px-6 py-2 rounded-full font-headline text-sm font-bold tracking-tight transition-colors shadow-sm"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -92,12 +135,7 @@ export const Layout = () => {
           to="/"
           className="flex flex-col items-center justify-center bg-primary/10 text-primary rounded-2xl px-5 py-2 active:scale-90 transition-transform"
         >
-          <span
-            className="material-symbols-outlined"
-            style={{ fontVariationSettings: "'FILL' 1" }}
-          >
-            home
-          </span>
+          <Home className="w-6 h-6" />
           <span className="font-headline text-[10px] font-bold uppercase tracking-widest mt-1">
             Home
           </span>
@@ -106,20 +144,43 @@ export const Layout = () => {
           to="/discover"
           className="flex flex-col items-center justify-center text-on-surface-variant px-5 py-2 hover:text-primary active:scale-90 transition-transform"
         >
-          <span className="material-symbols-outlined">explore</span>
+          <Compass className="w-6 h-6" />
           <span className="font-headline text-[10px] font-bold uppercase tracking-widest mt-1">
             Discover
           </span>
         </Link>
-        <Link
-          to="/profile"
-          className="flex flex-col items-center justify-center text-on-surface-variant px-5 py-2 hover:text-primary active:scale-90 transition-transform"
-        >
-          <span className="material-symbols-outlined">person_outline</span>
-          <span className="font-headline text-[10px] font-bold uppercase tracking-widest mt-1">
-            Profile
-          </span>
-        </Link>
+        {isAuthenticated ? (
+          <>
+            <Link
+              to="/profile"
+              className="flex flex-col items-center justify-center text-on-surface-variant px-5 py-2 hover:text-primary active:scale-90 transition-transform"
+            >
+              <UserCircle className="w-6 h-6" />
+              <span className="font-headline text-[10px] font-bold uppercase tracking-widest mt-1">
+                Profile
+              </span>
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="flex flex-col items-center justify-center text-on-surface-variant hover:text-error px-5 py-2 active:scale-90 transition-transform cursor-pointer"
+            >
+              <LogOut className="w-6 h-6" />
+              <span className="font-headline text-[10px] font-bold uppercase tracking-widest mt-1">
+                Log Out
+              </span>
+            </button>
+          </>
+        ) : (
+          <Link
+            to="/login"
+            className="flex flex-col items-center justify-center text-on-surface-variant px-5 py-2 hover:text-primary active:scale-90 transition-transform"
+          >
+            <LogIn className="w-6 h-6" />
+            <span className="font-headline text-[10px] font-bold uppercase tracking-widest mt-1">
+              Log In
+            </span>
+          </Link>
+        )}
       </nav>
     </div>
   );
