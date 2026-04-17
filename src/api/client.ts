@@ -5,15 +5,10 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials:true,
 });
 
-// Automatically attach JWT token to every request
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access_token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
+// cookies are sent auto by browser no need to local storage
+// backend sets cookies (access,refresh)
+// every api call since withcred. is true so browser send cookies and backend reads cookies so auth the user
 export default api;
