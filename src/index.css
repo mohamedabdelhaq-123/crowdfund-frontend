@@ -1,9 +1,74 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-body {
-  margin: 0;
+@theme {
+  /* 🟠 Primary Colors (The Pulse) */
+  --color-primary: #9b3f00;
+  --color-primary-container: #ff7a2c;
+  --color-on-primary: #fff0ea;
+  --color-primary-fixed: #ff7a2c;
+  --color-on-primary-fixed: #000000;
+
+  /* 🟤 Tertiary Colors (Trust/Badges) */
+  --color-tertiary: #7a5400;
+
+  /* ⚪ Surfaces & Containers (The Layers) */
+  --color-surface: #f9f6f5; /* Base */
+  --color-surface-container-lowest: #ffffff; /* Cards */
+  --color-surface-container-low: #f3f0ef; /* Sections / Inputs */
+  --color-surface-container-high: #e5e2e1; /* Filter Chips */
+  --color-surface-container-highest: #dfdcdc; /* Secondary Buttons */
+
+  --color-secondary-container: #e2e2e2; /* Progress Bar Track */
+
+  /* 📝 Typography */
+  --color-on-surface: #2f2e2e; /* Charcoal-gray for text */
+
+  /* 🔲 Outlines */
+  --color-outline-variant: #afacac; /* Ghost Border Fallback */
+
+  /* 🔤 Fonts (The Dual-Script Dialogue) */
+  --font-headline: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Be Vietnam Pro', sans-serif;
+
+  /* 📐 Radii */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.75rem;
+  --radius-xl: 1.5rem;
 }
 
-#root {
-  min-height: 100vh;
+/* 🎨 Signature Gradient (Primary CTAs & Progress Bars) */
+@utility signature-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-primary-container) 100%
+  );
+}
+
+/* ☁️ Ambient Atmosphere Shadow (Interactive Cards) */
+@utility shadow-ambient {
+  box-shadow: 0px 20px 40px rgba(47, 46, 46, 0.06);
+}
+
+/* 🪟 Glassmorphism (Floating Elements) */
+@utility glass-panel {
+  background-color: rgba(249, 246, 245, 0.7);
+  backdrop-filter: blur(24px);
+}
+
+/* Base Rules */
+body {
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+  font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-headline {
+  font-family: var(--font-headline);
 }
