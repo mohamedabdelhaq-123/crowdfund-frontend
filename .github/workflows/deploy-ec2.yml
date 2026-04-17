@@ -30,6 +30,7 @@ jobs:
 
             git -C crowdfund-frontend fetch origin dev
             git -C crowdfund-frontend reset --hard origin/dev
+            git -C crowdfund-frontend clean -fd
 
             compose() {
               if docker compose version >/dev/null 2>&1; then
@@ -42,9 +43,8 @@ jobs:
               fi
             }
 
-            docker builder prune -af || true
-
             compose -p crowdfund up -d --build --no-deps frontend
 
-            # Remove dangling images created by rebuilds
-            docker image prune -f
+            docker builder prune -af || true
+            docker image prune -f || true
+            docker volume prune -f || true
