@@ -20,7 +20,7 @@ export const updateProject = async (project_id:number,payload: FormData):Promise
 }
 
 export const cancelProject = async(project_id:number):Promise<ProjectDetails> =>{
-  const response = await api.post<ProjectDetails>(`/projects/${project_id}/`);
+  const response = await api.delete<ProjectDetails>(`/projects/${project_id}/`);
   return response.data;
 }
 
