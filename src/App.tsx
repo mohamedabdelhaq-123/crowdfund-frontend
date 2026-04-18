@@ -13,6 +13,7 @@ import ActivatePage from './pages/auth/ActivatePage';
 import { ProjectDetailsPage } from './pages/project-details/project-details';
 import { DonationPage } from './pages/project-details/donation-form';
 import ProfilePage from './pages/ProfilePage';
+import { ErrorState } from './components/ui/ErrorState';
 
 const router = createBrowserRouter([
   {
@@ -51,6 +52,16 @@ const router = createBrowserRouter([
           { path: 'profile/:id', element: <ProfilePage /> },
           { path: 'profile/edit', element: <ProfilePage /> },
         ],
+      },
+      // catch-all route for unhandled paths
+      {
+        path: '*',
+        element: (
+          <ErrorState
+            title="Page Lost in the Sands"
+            message="The page you're looking for doesn't exist or has been moved."
+          />
+        ),
       },
     ],
   },

@@ -15,8 +15,8 @@ export const SimilarProjects = ({ projectId }: SimilarProjectsProps) => {
   });
 
   if (isLoading) return <LoadingState />;
-
-  if (!projects || projects.length === 0) return null;
+  
+  if (!projects?.results?.length) return null;
 
   return (
     <div className="space-y-8">
@@ -24,7 +24,7 @@ export const SimilarProjects = ({ projectId }: SimilarProjectsProps) => {
         Similar Projects
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {projects.map((project) => (
+        {projects.results.map((project) => (
           <ProjectCard key={project.id} project={project} />
         ))}
       </div>
