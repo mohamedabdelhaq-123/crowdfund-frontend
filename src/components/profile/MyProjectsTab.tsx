@@ -59,7 +59,7 @@ export default function MyProjectsTab({ projects, isPublicView }: { projects: Pr
         })}
 
         {!isPublicView && currentPage === 1 && (
-          <Link to="/projects/create" className="border-2 border-dashed border-outline-variant/30 rounded-3xl p-6 flex flex-col items-center justify-center text-center group cursor-pointer hover:bg-white transition-all h-[480px]">
+          <Link to="/start-a-project" className="border-2 border-dashed border-outline-variant/30 rounded-3xl p-6 flex flex-col items-center justify-center text-center group cursor-pointer hover:bg-white transition-all h-[480px]">
             <div className="h-20 w-20 rounded-full bg-surface-container flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
               <span className="material-symbols-outlined text-4xl text-outline-variant">add_circle</span>
             </div>
