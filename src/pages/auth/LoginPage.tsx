@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { AlertCircle, MailWarning } from 'lucide-react';
+import { AlertCircle, LockOpen, MailWarning } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../api/client';
 import { loginSchema, LoginFormData } from '../../validation/authSchema';
@@ -104,31 +104,26 @@ const LoginPage = () => {
             <div className="relative z-10 max-w-lg text-center">
               <div className="mb-8 flex justify-center">
                 <div className="w-24 h-24 signature-gradient rounded-3xl flex items-center justify-center shadow-2xl -rotate-3">
-                  <span
-                    className="material-symbols-outlined text-white text-5xl"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    lock_open
-                  </span>
+                  <MailWarning className="w-12 h-12 text-white" strokeWidth={2.25} />
                 </div>
               </div>
               <h1 className="font-headline text-5xl font-extrabold text-on-surface tracking-tight mb-6">
                 Welcome back, <span className="text-primary italic">changemaker</span>.
               </h1>
               <p className="text-lg text-on-surface-variant leading-relaxed mb-8 font-body">
-                Sign in to continue supporting Egyptian innovation and managing your campaigns.
+                Sign in to join a community that’s building Egypt’s future—one idea at a time.
               </p>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm text-left">
-                  <span className="text-primary font-headline text-3xl font-bold block mb-1">24/7</span>
+                  <span className="text-primary font-headline text-3xl font-bold block mb-1">Real Stories</span>
                   <span className="text-sm font-label text-on-surface-variant uppercase tracking-wider">
-                    Campaign Access
+                    See the difference you make
                   </span>
                 </div>
                 <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm text-left">
-                  <span className="text-primary font-headline text-3xl font-bold block mb-1">Secure</span>
+                  <span className="text-primary font-headline text-3xl font-bold block mb-1">Project First</span>
                   <span className="text-sm font-label text-on-surface-variant uppercase tracking-wider">
-                    JWT Auth
+                    Every click fuels a vision
                   </span>
                 </div>
               </div>
