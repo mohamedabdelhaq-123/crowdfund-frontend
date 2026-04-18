@@ -10,11 +10,17 @@ import Home from './pages/HomePage';
 import RegisterPage from './pages/auth/RegisterPage';
 import LoginPage from './pages/auth/LoginPage';
 import ActivatePage from './pages/auth/ActivatePage';
+import TestCommentsPage from './pages/TestCommentsPage';
 
 const router = createBrowserRouter([
   {
     path: 'activate/:token',
     element: <ActivatePage />, // standalone page — no navbar/footer
+  },
+  // Add test route outside layout for direct access
+  {
+    path: '/test-comments',
+    element: <TestCommentsPage />,
   },
   {
     path: '/',

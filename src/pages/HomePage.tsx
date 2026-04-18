@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getHomepageData } from '../api/home';
 import { ProjectCard } from '../components/ProjectCard';
 import { LoadingState, ErrorState } from '../components/ui';
+import { ProjectCommentsSection } from '../components/ProjectCommentsSection';
 
 const HomePage = () => {
   const { data, isLoading, isError, refetch } = useQuery({
@@ -23,6 +24,8 @@ const HomePage = () => {
 
   return (
     <div className="max-w-screen-2xl mx-auto px-4 md:px-8 py-16 space-y-24">
+      {/* TEMP: Show comment section for project 11 for testing */}
+      <ProjectCommentsSection projectId={11} />
       {data?.featured && data.featured.length > 0 && (
         <section>
           <div className="mb-12">
