@@ -11,6 +11,13 @@ export interface Project {
   uploaded_image_url: string;
 }
 
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
 export interface Category {
   id: number;
   name: string;
