@@ -49,8 +49,32 @@ public/
 src/
   api/
     client.ts
+    home.ts
+  components/
+    ui/
+      Button.tsx
+      ErrorState.tsx
+      index.ts
+      Input.tsx
+      Layout.tsx
+      LoadingState.tsx
+    ProjectCard.tsx
+    ProtectedRoute.tsx
+  pages/
+    auth/
+      ActivatePage.tsx
+      LoginPage.tsx
+      RegisterPage.tsx
+    HomePage.tsx
   store/
+    slices/
+      authSlice.ts
     store.ts
+  types/
+    auth.ts
+    project.ts
+  validation/
+    authSchema.ts
   App.tsx
   index.css
   main.tsx
@@ -102,71 +126,1396 @@ This section contains the contents of the repository's files.
 </svg>
 </file>
 
-<file path="src/api/client.ts">
-import axios from 'axios';
+<file path="src/api/home.ts">
+import api from './client';
+import { HomepageData } from '../types/project';
 
-const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Automatically attach JWT token to every request
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-export default api;
+export const getHomepageData = async (): Promise<HomepageData> => {
+  const response = await api.get<HomepageData>('/projects/home/');
+  return response.data;
+};
 </file>
 
-<file path="src/store/store.ts">
-import { configureStore } from '@reduxjs/toolkit';
-
-export const store = configureStore({
-  reducer: {
-    // Add slices here as the team builds them
-    // profile: profileReducer,
-    // auth: authReducer,
-    // projects: projectsReducer,
-  },
-});
-
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
-</file>
-
-<file path="src/App.tsx">
-function App() {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <h1 className="text-3xl font-bold">CrowdFunding Egypt 🇪🇬</h1>
-    </div>
-  )
+<file path="src/components/ui/Button.tsx">
+import React from 'react';
+interface ButtonProps {
+  children: React.ReactNode;
+  onClick?: () => void;
+  variant?: 'primary' | 'secondary' | 'tertiary';
+  disabled?: boolean;
+  isLoading?: boolean;
+  type?: 'button' | 'submit';
+  className?: string;
 }
 
-export default App
+const variantStyles = {
+  primary:
+    'signature-gradient text-on-primary rounded-full hover:shadow-ambient hover:scale-[1.02] active:scale-95',
+  secondary:
+    'bg-surface-container-highest text-primary rounded-full hover:bg-surface-container-high',
+  tertiary:
+    'bg-transparent text-primary hover:underline underline-offset-8 !px-0',
+};
+
+export const Button = ({
+  children,
+  onClick,
+  variant = 'primary',
+  disabled = false,
+  isLoading = false,
+  type = 'button',
+  className = '',
+}: ButtonProps) => {
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled || isLoading}
+      className={`
+        px-8 py-3 font-headline font-bold transition-all duration-300
+        disabled:opacity-50 disabled:cursor-not-allowed
+        flex items-center justify-center gap-2
+        ${variantStyles[variant]}
+        ${className}
+      `}
+    >
+      {isLoading && (
+        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+      )}
+      {children}
+    </button>
+  );
+};
 </file>
 
-<file path="src/main.tsx">
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import { Provider } from 'react-redux';
-import { store } from './store/store';
-import App from './App';
-import './index.css';
+<file path="src/components/ui/ErrorState.tsx">
+import { AlertCircle, RefreshCcw, Home } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from './Button';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <Provider store={store}>
-      <App />
-    </Provider>
-  </StrictMode>,
-);
+interface ErrorStateProps {
+  title?: string;
+  message?: string;
+  onRetry?: () => void;
+  showHome?: boolean;
+}
+
+export const ErrorState = ({
+  title = 'Oasis Temporarily Hidden',
+  message = 'We encountered a technical issue. Please try again.',
+  onRetry,
+  showHome = true,
+}: ErrorStateProps) => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
+      <div className="w-16 h-16 rounded-2xl bg-error/10 flex items-center justify-center text-error mb-8">
+        <AlertCircle size={32} />
+      </div>
+
+      <h1 className="font-headline text-3xl font-black mb-4">{title}</h1>
+
+      <p className="text-on-surface-variant max-w-md mb-10 font-body">
+        {message}
+      </p>
+
+      <div className="flex flex-col sm:flex-row gap-4">
+        {onRetry && (
+          <Button onClick={onRetry} variant="primary" className="gap-2 px-10">
+            <RefreshCcw size={18} />
+            Try Again
+          </Button>
+        )}
+
+        {showHome && (
+          <Button
+            onClick={() => navigate('/')}
+            variant="secondary"
+            className="gap-2 px-10"
+          >
+            <Home size={18} />
+            Back to Home
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+};
+</file>
+
+<file path="src/components/ui/index.ts">
+export * from './Button';
+export * from './Input';
+export * from './LoadingState';
+export * from './ErrorState';
+</file>
+
+<file path="src/components/ui/Input.tsx">
+import React from 'react';
+
+interface InputProps {
+  label: string;
+  type?: string;
+  placeholder?: string;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  error?: string;
+  className?: string;
+}
+
+export const Input = ({
+  label,
+  type = 'text',
+  placeholder,
+  value,
+  onChange,
+  error,
+  className = '',
+}: InputProps) => {
+  return (
+    <div className={`flex flex-col gap-2 ${className}`}>
+      <label className="font-headline text-sm font-bold text-on-surface-variant">
+        {label}
+      </label>
+      <input
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        className={`
+          w-full px-4 py-3 rounded-xl outline-none transition-all duration-300
+          text-on-surface placeholder:text-on-surface-variant/50
+          bg-surface-container-low
+          focus:bg-surface focus:ring-2 focus:ring-primary/40 focus:shadow-sm
+          ${error ? 'ring-2 ring-red-500/50 bg-red-50/10' : ''}
+        `}
+      />
+
+      {error && (
+        <span className="text-xs font-bold text-red-500 mt-1">{error}</span>
+      )}
+    </div>
+  );
+};
+
+export default Input;
+</file>
+
+<file path="src/components/ui/LoadingState.tsx">
+import { motion } from 'framer-motion';
+
+interface LoadingStateProps {
+  fullPage?: boolean;
+}
+
+export const LoadingState = ({ fullPage = false }: LoadingStateProps) => {
+  return (
+    <div
+      className={`w-full flex flex-col items-center justify-center gap-4 ${fullPage ? 'min-h-[80vh]' : 'py-20'}`}
+    >
+      <div className="w-48 h-[2px] bg-surface-container-high relative overflow-hidden">
+        <motion.div
+          className="absolute inset-0 signature-gradient"
+          initial={{ x: '-100%' }}
+          animate={{ x: '100%' }}
+          transition={{
+            repeat: Infinity,
+            duration: 1.5,
+            ease: 'easeInOut',
+          }}
+        />
+      </div>
+      <span className="font-headline text-[10px] font-bold tracking-[0.3em] uppercase text-primary animate-pulse">
+        Synchronizing Oasis
+      </span>
+    </div>
+  );
+};
+</file>
+
+<file path="src/components/ProjectCard.tsx">
+import { Project } from '../types/project';
+
+interface ProjectCardProps {
+  project: Project;
+}
+
+export const ProjectCard = ({ project }: ProjectCardProps) => {
+  const progressPercent = Math.min(
+    (project.current_money / project.target) * 100,
+    100
+  );
+
+  return (
+    <div className="bg-surface-container-lowest rounded-[2rem] overflow-hidden editorial-shadow group flex flex-col h-full hover:-translate-y-2 transition-transform duration-500 cursor-pointer">
+      <div className="relative h-64 overflow-hidden bg-surface-container-low">
+        <img
+          src={project.uploaded_image_url}
+          alt={project.title}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src =
+              'https://via.placeholder.com/400x300?text=OasisFund';
+          }}
+        />
+        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-primary">
+          {project.category_name}
+        </div>
+      </div>
+
+      <div className="p-8 flex flex-col flex-1">
+        <h3 className="text-2xl font-bold font-headline mb-4 group-hover:text-primary transition-colors line-clamp-2">
+          {project.title}
+        </h3>
+
+        <p className="text-on-surface-variant text-sm leading-relaxed mb-8 flex-1 line-clamp-3">
+          {project.details}
+        </p>
+
+        <div className="space-y-4 mb-6">
+          <div className="w-full bg-secondary-container h-2 rounded-full overflow-hidden">
+            <div
+              className="signature-gradient h-full rounded-full transition-all duration-1000 ease-out"
+              style={{ width: `${progressPercent}%` }}
+            ></div>
+          </div>
+
+          <div className="flex justify-between text-sm">
+            <div className="flex flex-col">
+              <span className="text-xs font-label uppercase text-on-surface-variant">
+                Raised
+              </span>
+              <span className="font-bold text-lg text-primary">
+                {project.current_money.toLocaleString()} EGP
+              </span>
+            </div>
+            <div className="flex flex-col items-end">
+              <span className="text-xs font-label uppercase text-on-surface-variant">
+                Target
+              </span>
+              <span className="font-bold text-lg">
+                {project.target.toLocaleString()} EGP
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-surface-container-low flex justify-between items-center mt-auto">
+          <div className="flex items-center gap-1 text-tertiary font-bold text-sm">
+            ⭐ {project.calculate_average_rating.toFixed(1)}
+          </div>
+          <span className="text-xs text-on-surface-variant font-label uppercase">
+            By{' '}
+            <span className="font-bold text-on-surface">
+              {project.user_fullname}
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+</file>
+
+<file path="src/components/ProtectedRoute.tsx">
+import { Navigate, Outlet } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../store/store';
+
+// wraps any route that requires authentication
+// while checkAuth is still loading → show nothing (prevents flash)
+// if not authenticated => redirect to /login
+// if authenticated => render the child route
+
+const ProtectedRoute = () => {
+  const { isAuthenticated, isLoading } = useSelector((state: RootState) => state.auth);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface">
+        <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <Outlet />;
+};
+
+export default ProtectedRoute;
+</file>
+
+<file path="src/pages/auth/ActivatePage.tsx">
+import { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import api from '../../api/client';
+import { CheckCircle, Info, Clock, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
+
+type ActivationStatus = 'loading' | 'success' | 'already' | 'expired' | 'invalid';
+
+const ActivatePage = () => {
+  const { token } = useParams<{ token: string }>();
+  const [status, setStatus] = useState<ActivationStatus>('loading');
+  const [message, setMessage] = useState('');
+
+  const [resendEmail, setResendEmail] = useState('');
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  useEffect(() => {
+    if (!token) {
+      setStatus('invalid');
+      setMessage('No activation token provided.');
+      return;
+    }
+
+    const activate = async () => {
+      try {
+        const res = await api.get(`/auth/activate/${token}/`);
+        if (res.data.message?.includes('already')) {
+          setStatus('already');
+        } else {
+          setStatus('success');
+        }
+        setMessage(res.data.message);
+      } catch (error: any) {
+        const errMsg = error.response?.data?.error || 'Activation failed.';
+        if (errMsg.toLowerCase().includes('expired')) {
+          setStatus('expired');
+        } else {
+          setStatus('invalid');
+        }
+        setMessage(errMsg);
+      }
+    };
+
+    activate();
+  }, [token]);
+
+
+  const handleResend = async () => {
+    if (!resendEmail.trim()) {
+      toast.error('Please enter your email address.');
+      return;
+    }
+    setResendLoading(true);
+    try {
+      await api.post('/auth/resend-activation/', { email: resendEmail });
+      toast.success('Activation email sent! Check your inbox.');
+      setResendCooldown(120);
+      const interval = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) { clearInterval(interval); return 0; }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (error: any) {
+      const msg = error.response?.data?.error || 'Could not resend. Try again later.';
+      toast.error(msg);
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  const stateConfig = {
+    loading:  { Icon: Loader2,      pulse: true  },
+    success:  { Icon: CheckCircle,  pulse: false },
+    already:  { Icon: Info,         pulse: false },
+    expired:  { Icon: Clock,        pulse: false },
+    invalid:  { Icon: AlertCircle,  pulse: false },
+  };
+  const cfg = stateConfig[status];
+
+  return (
+    <div className="bg-surface font-body text-on-surface min-h-screen flex flex-col">
+      <main className="flex-grow flex items-center justify-center p-6 relative overflow-hidden">
+        <div className="absolute top-[-10%] right-[-5%] w-[400px] h-[400px] signature-gradient opacity-5 rounded-full blur-[100px]" />
+        <div className="absolute bottom-[-5%] left-[-5%] w-[300px] h-[300px] bg-tertiary opacity-5 rounded-full blur-[80px]" />
+
+        <div className="w-full max-w-lg z-10">
+          <div className="flex justify-center mb-10">
+            <Link to="/" className="font-headline font-extrabold text-3xl tracking-tighter text-on-surface hover:text-primary transition-colors">
+              FundEgypt
+            </Link>
+          </div>
+
+          <div className="bg-surface-container-lowest rounded-xl p-8 md:p-12 shadow-[0_40px_60px_-15px_rgba(47,46,46,0.06)] text-center">
+            <div className="relative w-24 h-24 mx-auto mb-8">
+              <div className={`absolute inset-0 signature-gradient opacity-10 rounded-full ${cfg.pulse ? 'animate-pulse' : ''}`} />
+              <div className={`absolute inset-2 rounded-full flex items-center justify-center ${
+                status === 'expired' || status === 'invalid'
+                  ? 'bg-error-container/80'
+                  : 'signature-gradient'
+              }`}>
+                <cfg.Icon
+                  className={`w-12 h-12 ${
+                    status === 'expired' || status === 'invalid' ? 'text-on-error' : 'text-on-primary'
+                  } ${status === 'loading' ? 'animate-spin' : ''}`}
+                />
+              </div>
+            </div>
+
+            {status === 'loading' && (
+              <>
+                <h1 className="font-headline font-bold text-3xl md:text-4xl text-on-surface mb-4 leading-tight">
+                  Activating your account…
+                </h1>
+                <p className="text-on-surface-variant text-lg leading-relaxed px-4">
+                  Please wait while we verify your activation link.
+                </p>
+              </>
+            )}
+
+            {status === 'success' && (
+              <>
+                <h1 className="font-headline font-bold text-3xl md:text-4xl text-on-surface mb-4 leading-tight">
+                  Account Activated!
+                </h1>
+                <p className="text-on-surface-variant text-lg leading-relaxed mb-10 px-4">
+                  Your account has been activated successfully! You can now start exploring and supporting projects.
+                </p>
+                <Link
+                  to="/login"
+                  className="inline-flex items-center justify-center w-full signature-gradient text-on-primary font-headline font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 group"
+                >
+                  Go to Login
+                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </>
+            )}
+
+            {status === 'already' && (
+              <>
+                <h1 className="font-headline font-bold text-3xl md:text-4xl text-on-surface mb-4 leading-tight">
+                  Already Activated
+                </h1>
+                <p className="text-on-surface-variant text-lg leading-relaxed mb-10 px-4">
+                  This account is already active. You can go ahead and sign in.
+                </p>
+                <Link
+                  to="/login"
+                  className="inline-flex items-center justify-center w-full signature-gradient text-on-primary font-headline font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 group"
+                >
+                  Go to Login
+                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </>
+            )}
+
+            {status === 'expired' && (
+              <>
+                <h1 className="font-headline font-bold text-3xl md:text-4xl text-on-surface mb-4 leading-tight">
+                  Link Expired
+                </h1>
+                <p className="text-on-surface-variant text-lg leading-relaxed mb-8 px-4">
+                  {message} Enter your email below to receive a fresh activation link.
+                </p>
+
+                <div className="space-y-4 text-left">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-label font-bold text-on-surface-variant uppercase tracking-wider ml-1">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      value={resendEmail}
+                      onChange={(e) => setResendEmail(e.target.value)}
+                      placeholder="ahmed@example.com"
+                      className="w-full px-4 py-3.5 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all placeholder:text-outline-variant"
+                    />
+                  </div>
+                  <button
+                    onClick={handleResend}
+                    disabled={resendLoading || resendCooldown > 0}
+                    className="w-full signature-gradient text-on-primary font-headline font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {resendLoading
+                      ? 'Sending…'
+                      : resendCooldown > 0
+                        ? `Resend available in ${resendCooldown}s`
+                        : 'Resend Activation Email'}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {status === 'invalid' && (
+              <>
+                <h1 className="font-headline font-bold text-3xl md:text-4xl text-on-surface mb-4 leading-tight">
+                  Invalid Link
+                </h1>
+                <p className="text-on-surface-variant text-lg leading-relaxed mb-10 px-4">
+                  {message} This link may have been tampered with or is no longer valid.
+                </p>
+                <Link
+                  to="/register"
+                  className="inline-flex items-center justify-center w-full signature-gradient text-on-primary font-headline font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 group"
+                >
+                  Back to Register
+                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </>
+            )}
+
+
+            {status !== 'loading' && (
+              <div className="mt-12 pt-8 border-t border-outline-variant/10">
+                <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant/60 font-bold mb-4">
+                  Need help?
+                </p>
+                <div className="flex flex-wrap justify-center gap-6">
+                  <a href="#" className="text-primary font-medium hover:underline transition-all decoration-2 underline-offset-4">
+                    Support Center
+                  </a>
+                  <a href="#" className="text-primary font-medium hover:underline transition-all decoration-2 underline-offset-4">
+                    Community Guide
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+
+
+
+          <div className="mt-8 grid grid-cols-3 gap-4 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+            <div className="bg-surface-container-low p-4 rounded-lg flex flex-col items-center">
+              <span className="font-headline font-bold text-xl text-on-surface">500+</span>
+              <span className="font-label text-[10px] uppercase font-bold tracking-tighter">Projects</span>
+            </div>
+            <div className="bg-surface-container-low p-4 rounded-lg flex flex-col items-center">
+              <span className="font-headline font-bold text-xl text-on-surface">EGP 20M</span>
+              <span className="font-label text-[10px] uppercase font-bold tracking-tighter">Raised</span>
+            </div>
+            <div className="bg-surface-container-low p-4 rounded-lg flex flex-col items-center">
+              <span className="font-headline font-bold text-xl text-on-surface">1k+</span>
+              <span className="font-label text-[10px] uppercase font-bold tracking-tighter">Backers</span>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default ActivatePage;
+</file>
+
+<file path="src/pages/auth/LoginPage.tsx">
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { AlertCircle, MailWarning } from 'lucide-react';
+import toast from 'react-hot-toast';
+import api from '../../api/client';
+import { loginSchema, LoginFormData } from '../../validation/authSchema';
+import { setCredentials } from '../../store/slices/authSlice';
+import type { AppDispatch } from '../../store/store';
+
+const LoginPage = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [showResend, setShowResend] = useState(false);
+  const [resendEmail, setResendEmail] = useState('');
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
+    setIsLoading(true);
+    setShowResend(false); // reset resend state on every new attempt
+
+    try {
+      await api.post('/auth/login/', data);
+
+      // when cookies are set =>fetch user data and update Redux store
+      const meRes = await api.get('/auth/me/');
+      dispatch(setCredentials(meRes.data));
+
+      toast.success('Welcome back!');
+      navigate('/'); // redirect to homepage on success
+    } catch (error: any) {
+      const res = error.response;
+
+      if (res?.data?.not_activated) {
+        // account exists + correct password but not activated
+        setShowResend(true);
+        setResendEmail(data.email);
+        setError('root', {
+          type: 'manual',
+          message: 'Your account is not activated. Check your email or resend the activation link below.',
+        });
+      } else if (res?.data) {
+        // wrong email or password (generic message)
+        const msg =
+          res.data.error?.[0] ||
+          res.data.error ||
+          res.data.non_field_errors?.[0] ||
+          'Invalid email or password.';
+        setError('root', { type: 'manual', message: msg });
+      } else {
+        toast.error('Something went wrong. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setResendLoading(true);
+    try {
+      await api.post('/auth/resend-activation/', { email: resendEmail });
+      toast.success('Activation email sent! Check your inbox.');
+
+      setResendCooldown(120);       // start a 120-second cooldown to match the backend's 2-minute cooldown
+      const interval = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (error: any) {
+      const msg = error.response?.data?.error || 'Could not resend. Please try again later.';
+      toast.error(msg);
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <main>
+        <div className="flex flex-col md:flex-row min-h-screen">
+          <div className="hidden md:flex md:w-1/2 bg-surface-container-low relative overflow-hidden items-center justify-center p-12">
+            <div className="absolute inset-0 z-0">
+              <div className="w-full h-full bg-gradient-to-br from-primary-container/20 to-tertiary-container/20" />
+            </div>
+            <div className="relative z-10 max-w-lg text-center">
+              <div className="mb-8 flex justify-center">
+                <div className="w-24 h-24 signature-gradient rounded-3xl flex items-center justify-center shadow-2xl -rotate-3">
+                  <span
+                    className="material-symbols-outlined text-white text-5xl"
+                    style={{ fontVariationSettings: "'FILL' 1" }}
+                  >
+                    lock_open
+                  </span>
+                </div>
+              </div>
+              <h1 className="font-headline text-5xl font-extrabold text-on-surface tracking-tight mb-6">
+                Welcome back, <span className="text-primary italic">changemaker</span>.
+              </h1>
+              <p className="text-lg text-on-surface-variant leading-relaxed mb-8 font-body">
+                Sign in to continue supporting Egyptian innovation and managing your campaigns.
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm text-left">
+                  <span className="text-primary font-headline text-3xl font-bold block mb-1">24/7</span>
+                  <span className="text-sm font-label text-on-surface-variant uppercase tracking-wider">
+                    Campaign Access
+                  </span>
+                </div>
+                <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm text-left">
+                  <span className="text-primary font-headline text-3xl font-bold block mb-1">Secure</span>
+                  <span className="text-sm font-label text-on-surface-variant uppercase tracking-wider">
+                    JWT Auth
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-tertiary-container/20 rounded-full blur-3xl"></div>
+          </div>
+
+          <div className="w-full md:w-1/2 bg-surface-container-lowest flex items-center justify-center p-6 md:p-12 lg:p-20">
+            <div className="w-full max-w-md">
+              <div className="bg-surface-container-low p-1.5 rounded-xl flex mb-10">
+                <Link
+                  to="/register"
+                  className="flex-1 py-3 text-sm font-headline font-semibold text-on-surface-variant hover:text-on-surface transition-all text-center"
+                >
+                  Register
+                </Link>
+                <button className="flex-1 py-3 text-sm font-headline font-bold rounded-lg bg-surface-container-lowest text-on-surface shadow-sm transition-all">
+                  Login
+                </button>
+              </div>
+
+              <header className="mb-8">
+                <h2 className="text-3xl font-headline font-extrabold text-on-surface mb-2">
+                  Sign in to your account
+                </h2>
+                <p className="text-on-surface-variant">
+                  Enter your credentials to access FundEgypt.
+                </p>
+              </header>
+
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                {errors.root && (
+                  <div
+                    className={`p-4 rounded-xl text-sm font-medium ${
+                      showResend
+                        ? 'bg-tertiary-container/30 text-on-tertiary-container'
+                        : 'bg-error-container/30 text-on-error-container'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      {showResend ? (
+                        <MailWarning className="w-5 h-5 mt-0.5 shrink-0" />
+                      ) : (
+                        <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
+                      )}
+                      <span>{errors.root.message}</span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-label font-bold text-on-surface-variant uppercase tracking-wider ml-1">
+                    Email Address
+                  </label>
+                  <input
+                    className={`w-full px-4 py-3.5 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all placeholder:text-outline-variant ${errors.email ? 'ring-2 ring-error' : ''}`}
+                    placeholder="ahmed@example.com"
+                    type="email"
+                    {...register('email')}
+                  />
+                  {errors.email && (
+                    <p className="text-xs text-error mt-1 ml-1">{errors.email.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between ml-1 mr-1">
+                    <label className="text-xs font-label font-bold text-on-surface-variant uppercase tracking-wider">
+                      Password
+                    </label>
+                    <Link
+                      to="/forgot-password"
+                      className="text-xs text-primary font-semibold hover:underline"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
+                  <input
+                    className={`w-full px-4 py-3.5 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all placeholder:text-outline-variant ${errors.password ? 'ring-2 ring-error' : ''}`}
+                    placeholder="••••••••"
+                    type="password"
+                    {...register('password')}
+                  />
+                  {errors.password && (
+                    <p className="text-xs text-error mt-1 ml-1">{errors.password.message}</p>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full signature-gradient text-on-primary py-4 rounded-xl font-headline font-bold text-lg shadow-lg shadow-primary/20 active:scale-[0.98] transition-all mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? 'Signing in...' : 'Sign In'}
+                </button>
+
+                {showResend && (
+                  <div className="bg-surface-container-low rounded-xl p-5 mt-2 text-center space-y-3">
+                    <p className="text-sm text-on-surface-variant">
+                      Didn't get the email? Request a new activation link.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleResend}
+                      disabled={resendLoading || resendCooldown > 0}
+                      className="text-sm font-headline font-bold text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {resendLoading
+                        ? 'Sending...'
+                        : resendCooldown > 0
+                          ? `Resend available in ${resendCooldown}s`
+                          : 'Resend Activation Email'}
+                    </button>
+                  </div>
+                )}
+              </form>
+
+              <footer className="mt-8 text-center">
+                <p className="text-sm text-on-surface-variant font-medium">
+                  Don't have an account?{' '}
+                  <Link className="text-primary font-bold hover:underline" to="/register">
+                    Create One
+                  </Link>
+                </p>
+              </footer>
+            </div>
+          </div>
+        </div>
+      </main>
+    </>
+  );
+};
+
+export default LoginPage;
+</file>
+
+<file path="src/pages/auth/RegisterPage.tsx">
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate, Link } from 'react-router-dom';
+import { useState, useRef } from 'react';
+import { Users, Camera } from 'lucide-react';
+import toast from 'react-hot-toast';
+import api from '../../api/client';
+import { registerSchema, RegisterFormData } from '../../validation/authSchema';
+
+const RegisterPage = () => {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [profilePicPreview, setProfilePicPreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+    watch,
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+  });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      toast.error('Only JPG, PNG, or WebP images are allowed.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5 MB.');
+      return;
+    }
+
+    setSelectedFile(file);
+    setProfilePicPreview(URL.createObjectURL(file)); // preview URL
+  };
+
+  // builds FormData so the file is sent as multipart
+  const onSubmit = async (data: RegisterFormData) => {
+    setIsLoading(true);
+
+    try {
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== '') {
+          formData.append(key, value);
+        }
+      });
+      if (selectedFile) {
+        formData.append('profile_pic', selectedFile);
+      }
+
+      const response = await api.post('/auth/register/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      toast.success(response.data.message || 'Registration successful! Check your email.');
+      navigate('/login');
+    } catch (error: any) {
+      if (error.response?.data) {
+        const backendErrors = error.response.data;
+        Object.entries(backendErrors).forEach(([field, message]) => {
+          setError(field as keyof RegisterFormData, {
+            type: 'manual',
+            message: Array.isArray(message) ? message[0] : message as string,
+          });
+        });
+        toast.error('Please check the form for errors.');
+      } else {
+        toast.error('Registration failed. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <main>
+        <div className="flex flex-col md:flex-row min-h-screen">
+          <div className="hidden md:flex md:w-1/2 bg-surface-container-low relative overflow-hidden items-center justify-center p-12">
+            <div className="absolute inset-0 z-0">
+              <div className="w-full h-full bg-gradient-to-br from-primary-container/20 to-tertiary-container/20" />
+            </div>
+            <div className="relative z-10 max-w-lg text-center">
+              <div className="mb-8 flex justify-center">
+                <div className="w-24 h-24 signature-gradient rounded-3xl flex items-center justify-center shadow-2xl rotate-3">
+                  <Users className="text-white w-12 h-12" />
+                </div>
+              </div>
+              <h1 className="font-headline text-5xl font-extrabold text-on-surface tracking-tight mb-6">
+                Empower the next <span className="text-primary italic">Egyptian</span> success story.
+              </h1>
+              <p className="text-lg text-on-surface-variant leading-relaxed mb-8 font-body">
+                Connect with local innovators and help turn visionary dreams into reality through community-driven crowdfunding.
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm text-left">
+                  <span className="text-primary font-headline text-3xl font-bold block mb-1">500+</span>
+                  <span className="text-sm font-label text-on-surface-variant uppercase tracking-wider">
+                    Projects Funded
+                  </span>
+                </div>
+                <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm text-left">
+                  <span className="text-primary font-headline text-3xl font-bold block mb-1">EGP 20M</span>
+                  <span className="text-sm font-label text-on-surface-variant uppercase tracking-wider">
+                    Raised Locally
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-primary-container/20 rounded-full blur-3xl"></div>
+          </div>
+
+          <div className="w-full md:w-1/2 bg-surface-container-lowest flex items-center justify-center p-6 md:p-12 lg:p-20">
+            <div className="w-full max-w-md">
+              <div className="bg-surface-container-low p-1.5 rounded-xl flex mb-10">
+                <button className="flex-1 py-3 text-sm font-headline font-bold rounded-lg bg-surface-container-lowest text-on-surface shadow-sm transition-all">
+                  Register
+                </button>
+                <Link 
+                  to="/login"
+                  className="flex-1 py-3 text-sm font-headline font-semibold text-on-surface-variant hover:text-on-surface transition-all text-center"
+                >
+                  Login
+                </Link>
+              </div>
+
+              <header className="mb-8">
+                <h2 className="text-3xl font-headline font-extrabold text-on-surface mb-2">
+                  Create your account
+                </h2>
+                <p className="text-on-surface-variant">
+                  Start your journey with FundEgypt today.
+                </p>
+              </header>
+
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-label font-bold text-on-surface-variant uppercase tracking-wider ml-1">
+                      First Name
+                    </label>
+                    <input
+                      className={`w-full px-4 py-3.5 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all placeholder:text-outline-variant ${errors.first_name ? 'ring-2 ring-error' : ''}`}
+                      placeholder="Ahmed"
+                      type="text"
+                      {...register('first_name')}
+                    />
+                    {errors.first_name && (
+                      <p className="text-xs text-error mt-1 ml-1">{errors.first_name.message}</p>
+                    )}
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-label font-bold text-on-surface-variant uppercase tracking-wider ml-1">
+                      Last Name
+                    </label>
+                    <input
+                      className={`w-full px-4 py-3.5 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all placeholder:text-outline-variant ${errors.last_name ? 'ring-2 ring-error' : ''}`}
+                      placeholder="Mansour"
+                      type="text"
+                      {...register('last_name')}
+                    />
+                    {errors.last_name && (
+                      <p className="text-xs text-error mt-1 ml-1">{errors.last_name.message}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-label font-bold text-on-surface-variant uppercase tracking-wider ml-1">
+                    Email Address
+                  </label>
+                  <input
+                    className={`w-full px-4 py-3.5 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all placeholder:text-outline-variant ${errors.email ? 'ring-2 ring-error' : ''}`}
+                    placeholder="ahmed@example.com"
+                    type="email"
+                    {...register('email')}
+                  />
+                  {errors.email && (
+                    <p className="text-xs text-error mt-1 ml-1">{errors.email.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-label font-bold text-on-surface-variant uppercase tracking-wider ml-1">
+                    Mobile Number
+                  </label>
+                  <div className="flex">
+                    <span className="flex items-center px-4 bg-surface-container-high rounded-l-xl text-on-surface font-semibold text-sm">
+                      +20
+                    </span>
+                    <input
+                      className={`flex-1 px-4 py-3.5 bg-surface-container-low border-none rounded-r-xl focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all placeholder:text-outline-variant ${errors.mobile_number ? 'ring-2 ring-error' : ''}`}
+                      placeholder="10 1234 5678"
+                      type="tel"
+                      {...register('mobile_number')}
+                    />
+                  </div>
+                  {errors.mobile_number && (
+                    <p className="text-xs text-error mt-1 ml-1">{errors.mobile_number.message}</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-label font-bold text-on-surface-variant uppercase tracking-wider ml-1">
+                      Password
+                    </label>
+                    <input
+                      className={`w-full px-4 py-3.5 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all placeholder:text-outline-variant ${errors.password ? 'ring-2 ring-error' : ''}`}
+                      placeholder="••••••••"
+                      type="password"
+                      {...register('password')}
+                    />
+                    {errors.password && (
+                      <p className="text-xs text-error mt-1 ml-1">{errors.password.message}</p>
+                    )}
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-label font-bold text-on-surface-variant uppercase tracking-wider ml-1">
+                      Confirm
+                    </label>
+                    <input
+                      className={`w-full px-4 py-3.5 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all placeholder:text-outline-variant ${errors.confirm_password ? 'ring-2 ring-error' : ''}`}
+                      placeholder="••••••••"
+                      type="password"
+                      {...register('confirm_password')}
+                    />
+                    {errors.confirm_password && (
+                      <p className="text-xs text-error mt-1 ml-1">{errors.confirm_password.message}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-label font-bold text-on-surface-variant uppercase tracking-wider ml-1">
+                    Profile Picture
+                  </label>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-outline-variant/30 rounded-2xl p-6 bg-surface-container-low/30 hover:bg-surface-container-low transition-colors group cursor-pointer text-center"
+                  >
+                    {profilePicPreview ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <img
+                          src={profilePicPreview}
+                          alt="Preview"
+                          className="w-20 h-20 rounded-full object-cover ring-2 ring-primary/30"
+                        />
+                        <p className="text-xs text-on-surface-variant">
+                          Click to change
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center">
+                        <Camera className="text-outline-variant group-hover:text-primary transition-colors mb-2 w-8 h-8" />
+                        <p className="text-sm font-medium text-on-surface-variant">
+                          Drag and drop or <span className="text-primary font-bold">browse</span>
+                        </p>
+                        <p className="text-[10px] text-outline mt-1 uppercase tracking-tighter">
+                          JPG, PNG (Max 5MB)
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full signature-gradient text-on-primary py-4 rounded-xl font-headline font-bold text-lg shadow-lg shadow-primary/20 active:scale-[0.98] transition-all mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? 'Creating Account...' : 'Create Account'}
+                </button>
+
+
+
+              </form>
+
+              <footer className="mt-8 text-center">
+                <p className="text-sm text-on-surface-variant font-medium">
+                  Already have an account?{' '}
+                  <Link className="text-primary font-bold hover:underline" to="/login">
+                    Sign In
+                  </Link>
+                </p>
+              </footer>
+            </div>
+          </div>
+        </div>
+      </main>
+
+
+    </>
+  );
+};
+
+export default RegisterPage;
+</file>
+
+<file path="src/pages/HomePage.tsx">
+import { useQuery } from '@tanstack/react-query';
+import { getHomepageData } from '../api/home';
+import { ProjectCard } from '../components/ProjectCard';
+import { LoadingState, ErrorState } from '../components/ui';
+
+const HomePage = () => {
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['homepage'],
+    queryFn: getHomepageData,
+  });
+
+  if (isLoading) return <LoadingState fullPage />;
+
+  if (isError) {
+    return (
+      <ErrorState
+        message="We couldn't fetch the latest projects from our servers."
+        onRetry={() => refetch()}
+      />
+    );
+  }
+
+  return (
+    <div className="max-w-screen-2xl mx-auto px-4 md:px-8 py-16 space-y-24">
+      {data?.featured && data.featured.length > 0 && (
+        <section>
+          <div className="mb-12">
+            <span className="text-primary font-headline font-bold tracking-[0.2em] uppercase text-xs">
+              Editor's Choice
+            </span>
+            <h2 className="text-5xl font-black font-headline tracking-tighter mt-4">
+              Featured Campaigns
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {data.featured.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {data?.top_rated && data.top_rated.length > 0 && (
+        <section>
+          <div className="mb-12">
+            <h2 className="text-4xl font-black font-headline tracking-tighter">
+              Top Rated Impact
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {data.top_rated.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {data?.latest && data.latest.length > 0 && (
+        <section className="bg-surface-container-low -mx-4 md:-mx-8 px-4 md:px-8 py-20 rounded-[3rem]">
+          <div className="mb-12">
+            <h2 className="text-4xl font-black font-headline tracking-tighter">
+              Latest Opportunities
+            </h2>
+            <p className="text-on-surface-variant mt-2 max-w-md font-body">
+              Be the first to fuel these community-led visions.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {data.latest.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+};
+
+export default HomePage;
+</file>
+
+<file path="src/store/slices/authSlice.ts">
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import api from '../../api/client';
+import type { AuthUser } from '../../types/auth';
+
+interface AuthState {
+  user: AuthUser | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}
+
+const initialState: AuthState = {
+  user: null,
+  isAuthenticated: false,
+  isLoading: true,          // start true so ProtectedRoute waits before redirecting
+};
+
+export const checkAuth = createAsyncThunk('auth/checkAuth', async (_, { rejectWithValue }) => {
+  try {
+    const res = await api.get('/auth/me/');
+    return res.data as AuthUser;    // { id, email, first_name, last_name, role }
+  } catch {
+    return rejectWithValue(null);   // cookies missing or expired
+  }
+});
+
+export const logout = createAsyncThunk('auth/logout', async (_, { rejectWithValue }) => {
+  try {
+    await api.post('/auth/logout/');
+  } catch {
+    return rejectWithValue(null);
+  }
+});
+
+const authSlice = createSlice({
+  name: 'auth',
+  initialState,
+  reducers: {
+    setCredentials(state, action: PayloadAction<AuthUser>) {
+      state.user = action.payload;
+      state.isAuthenticated = true;
+      state.isLoading = false;
+    },
+    clearCredentials(state) {
+      state.user = null;
+      state.isAuthenticated = false;
+      state.isLoading = false;
+    },
+  },
+  extraReducers: (builder) => {
+    // checkAuth
+    builder.addCase(checkAuth.pending, (state) => {
+      state.isLoading = true;
+    });
+    builder.addCase(checkAuth.fulfilled, (state, action) => {
+      state.user = action.payload;
+      state.isAuthenticated = true;
+      state.isLoading = false;
+    });
+    builder.addCase(checkAuth.rejected, (state) => {
+      state.user = null;
+      state.isAuthenticated = false;
+      state.isLoading = false;
+    });
+
+    // logout
+    builder.addCase(logout.fulfilled, (state) => {
+      state.user = null;
+      state.isAuthenticated = false;
+    });
+    builder.addCase(logout.rejected, (state) => {
+      // clear state even if the API call fails (cookie may already be gone)
+      state.user = null;
+      state.isAuthenticated = false;
+    });
+  },
+});
+
+export const { setCredentials, clearCredentials } = authSlice.actions;
+export default authSlice.reducer;
+</file>
+
+<file path="src/types/auth.ts">
+export interface AuthUser {
+  id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: string;
+}
+</file>
+
+<file path="src/types/project.ts">
+export interface Project {
+  id: number;
+  title: string;
+  details: string;
+  target: number;
+  current_money: number;
+  avg_rate: number;
+  calculate_average_rating: number;
+  category_name: string;
+  user_fullname: string;
+  uploaded_image_url: string;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+}
+
+export interface HomepageData {
+  latest: Project[];
+  featured: Project[];
+  top_rated: Project[];
+  categories: Category[];
+}
+</file>
+
+<file path="src/validation/authSchema.ts">
+import { z } from 'zod';
+
+const egyptianPhoneRegex = /^01[0125][0-9]{8}$/;
+
+export const registerSchema = z.object({
+  first_name: z.string().min(1, 'First name is required'),
+  last_name: z.string().min(1, 'Last name is required'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  confirm_password: z.string(),
+  mobile_number: z.string().regex(egyptianPhoneRegex, 'Invalid Egyptian phone number'),
+  birthdate: z.string().optional(),
+  fb_profile: z.string().url().optional().or(z.literal('')),
+  country: z.string().optional(),
+}).refine((data) => data.password === data.confirm_password, {
+  message: "Passwords don't match",
+  path: ['confirm_password'],
+});
+
+export type RegisterFormData = z.infer<typeof registerSchema>;
+
+export const loginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+export type LoginFormData = z.infer<typeof loginSchema>;
 </file>
 
 <file path="src/vite-env.d.ts">
@@ -268,16 +1617,213 @@ If you are developing a production application, we recommend using TypeScript wi
 }
 </file>
 
-<file path="src/index.css">
-@import "tailwindcss";
+<file path="src/components/ui/Layout.tsx">
+import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { Home, Compass, UserCircle, LogIn, LogOut } from 'lucide-react';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '../../store/store';
+import { logout } from '../../store/slices/authSlice';
+import toast from 'react-hot-toast';
 
-body {
-  margin: 0;
-}
+export const Layout = () => {
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
 
-#root {
-  min-height: 100vh;
-}
+  const handleLogout = async () => {
+    try {
+      await dispatch(logout()).unwrap();
+      toast.success('Logged out successfully');
+      navigate('/login');
+    } catch {
+      toast.error('Failed to logout');
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <nav className="fixed top-0 w-full z-50 glass-panel">
+        <div className="flex justify-between items-center px-4 md:px-8 py-4 max-w-screen-2xl mx-auto">
+          <div className="flex items-center gap-12">
+            <Link
+              to="/"
+              className="text-2xl font-black tracking-tighter text-primary-container font-headline"
+            >
+              OasisFund
+            </Link>
+            <div className="hidden md:flex gap-8">
+              <Link
+                to="/"
+                className="text-primary-container border-b-2 border-primary-container pb-1 font-headline text-sm font-semibold tracking-tight"
+              >
+                Explore
+              </Link>
+              <Link
+                to="/impact"
+                className="text-on-surface-variant hover:text-primary transition-colors font-headline text-sm font-semibold tracking-tight"
+              >
+                Impact
+              </Link>
+              <Link
+                to="/how-it-works"
+                className="text-on-surface-variant hover:text-primary transition-colors font-headline text-sm font-semibold tracking-tight"
+              >
+                How it Works
+              </Link>
+            </div>
+          </div>
+
+          {/* Desktop Auth Navigation */}
+          <div className="hidden md:flex items-center gap-6">
+            {isAuthenticated ? (
+              <div className="flex items-center gap-4 bg-surface-container-low px-4 py-1.5 rounded-full border border-outline-variant/50 shadow-sm transition-all hover:shadow-md">
+                <Link
+                  to="/profile"
+                  className="flex items-center gap-2 text-on-surface hover:text-primary transition-colors font-headline text-sm font-semibold"
+                >
+                  <UserCircle className="w-5 h-5" />
+                  <span>Profile</span>
+                </Link>
+                <div className="w-[1px] h-4 bg-outline-variant/50"></div>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center text-on-surface-variant hover:text-primary transition-colors p-1 cursor-pointer"
+                  title="Log Out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="text-on-surface-variant hover:text-primary transition-colors font-headline text-sm font-bold tracking-tight"
+                >
+                  Log In
+                </Link>
+                <Link
+                  to="/register"
+                  className="bg-primary text-on-primary hover:bg-primary/90 px-6 py-2 rounded-full font-headline text-sm font-bold tracking-tight transition-colors shadow-sm"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </nav>
+
+      <main className="flex-1 pt-20 pb-24 md:pb-0">
+        <Outlet />
+      </main>
+
+      <footer className="w-full mt-auto bg-surface-container-low">
+        <div className="max-w-7xl mx-auto px-8 py-12 flex flex-col md:flex-row justify-between items-center">
+          <div className="mb-8 md:mb-0">
+            <span className="text-lg font-bold text-on-surface font-headline">
+              OasisFund
+            </span>
+            <p className="font-body text-sm text-on-surface-variant mt-2">
+              © 2026 OasisFund. Designed for Impact.
+            </p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-8">
+            <Link
+              to="/privacy"
+              className="font-body text-sm text-on-surface-variant hover:text-primary transition-colors underline underline-offset-4"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              to="/terms"
+              className="font-body text-sm text-on-surface-variant hover:text-primary transition-colors underline underline-offset-4"
+            >
+              Terms of Service
+            </Link>
+            <Link
+              to="/help"
+              className="font-body text-sm text-on-surface-variant hover:text-primary transition-colors underline underline-offset-4"
+            >
+              Help Center
+            </Link>
+          </div>
+        </div>
+      </footer>
+
+      <nav className="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 glass-panel shadow-[0_-8px_30px_rgb(0,0,0,0.04)] rounded-t-3xl md:hidden z-50">
+        <Link
+          to="/"
+          className="flex flex-col items-center justify-center bg-primary/10 text-primary rounded-2xl px-5 py-2 active:scale-90 transition-transform"
+        >
+          <Home className="w-6 h-6" />
+          <span className="font-headline text-[10px] font-bold uppercase tracking-widest mt-1">
+            Home
+          </span>
+        </Link>
+        <Link
+          to="/discover"
+          className="flex flex-col items-center justify-center text-on-surface-variant px-5 py-2 hover:text-primary active:scale-90 transition-transform"
+        >
+          <Compass className="w-6 h-6" />
+          <span className="font-headline text-[10px] font-bold uppercase tracking-widest mt-1">
+            Discover
+          </span>
+        </Link>
+        {isAuthenticated ? (
+          <>
+            <Link
+              to="/profile"
+              className="flex flex-col items-center justify-center text-on-surface-variant px-5 py-2 hover:text-primary active:scale-90 transition-transform"
+            >
+              <UserCircle className="w-6 h-6" />
+              <span className="font-headline text-[10px] font-bold uppercase tracking-widest mt-1">
+                Profile
+              </span>
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="flex flex-col items-center justify-center text-on-surface-variant hover:text-error px-5 py-2 active:scale-90 transition-transform cursor-pointer"
+            >
+              <LogOut className="w-6 h-6" />
+              <span className="font-headline text-[10px] font-bold uppercase tracking-widest mt-1">
+                Log Out
+              </span>
+            </button>
+          </>
+        ) : (
+          <Link
+            to="/login"
+            className="flex flex-col items-center justify-center text-on-surface-variant px-5 py-2 hover:text-primary active:scale-90 transition-transform"
+          >
+            <LogIn className="w-6 h-6" />
+            <span className="font-headline text-[10px] font-bold uppercase tracking-widest mt-1">
+              Log In
+            </span>
+          </Link>
+        )}
+      </nav>
+    </div>
+  );
+};
+
+export default Layout;
+</file>
+
+<file path="src/store/store.ts">
+import { configureStore } from '@reduxjs/toolkit';
+import authReducer from './slices/authSlice';
+
+export const store = configureStore({
+  reducer: {
+    auth: authReducer,
+    // Add slices here as the team builds them
+    // profile: profileReducer,
+    // projects: projectsReducer,
+  },
+});
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
 </file>
 
 <file path=".dockerignore">
@@ -312,54 +1858,6 @@ dist-ssr
 *.sln
 *.sw?
 .env
-</file>
-
-<file path="package.json">
-{
-  "name": "crowdfund-frontend",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@hookform/resolvers": "^5.2.2",
-    "@reduxjs/toolkit": "^2.11.2",
-    "@tanstack/react-query": "^5.97.0",
-    "axios": "^1.15.0",
-    "date-fns": "^4.1.0",
-    "jwt-decode": "^4.0.0",
-    "lucide-react": "^1.8.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "react-hook-form": "^7.72.1",
-    "react-hot-toast": "^2.6.0",
-    "react-redux": "^9.2.0",
-    "react-router-dom": "^7.14.0",
-    "swiper": "^12.1.3",
-    "zod": "^4.3.6"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.39.4",
-    "@tailwindcss/vite": "^4.2.2",
-    "@types/node": "^25.6.0",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@types/react-redux": "^7.1.34",
-    "@vitejs/plugin-react": "^6.0.1",
-    "eslint": "^9.39.4",
-    "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.5.2",
-    "globals": "^17.4.0",
-    "tailwindcss": "^4.2.2",
-    "typescript": "^6.0.2",
-    "vite": "^8.0.4"
-  }
-}
 </file>
 
 <file path="tsconfig.node.json">
@@ -413,6 +1911,185 @@ export default defineConfig(({ mode }) => {
 });
 </file>
 
+<file path="src/api/client.ts">
+import axios from "axios";
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials:true,
+});
+
+// cookies are sent auto by browser no need to local storage
+// backend sets cookies (access,refresh)
+// every api call since withcred. is true so browser send cookies and backend reads cookies so auth the user
+export default api;
+</file>
+
+<file path="src/App.tsx">
+import { useEffect } from 'react';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from './store/store';
+import { checkAuth } from './store/slices/authSlice';
+
+import Layout from './components/ui/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
+import Home from './pages/HomePage';
+import RegisterPage from './pages/auth/RegisterPage';
+import LoginPage from './pages/auth/LoginPage';
+import ActivatePage from './pages/auth/ActivatePage';
+
+const router = createBrowserRouter([
+  {
+    path: 'activate/:token',
+    element: <ActivatePage />, // standalone page — no navbar/footer
+  },
+  {
+    path: '/',
+    element: <Layout />,
+    children: [
+      {
+        index: true,
+        element: <Home />,
+      },
+      {
+        path: 'register',
+        element: <RegisterPage />,
+      },
+      {
+        path: 'login',
+        element: <LoginPage />,
+      },
+
+      // any route nested under this wrapper needs auth
+      {
+        element: <ProtectedRoute />,
+        children: [
+          //for ex: { path: 'profile', element: <ProfilePage /> },
+        ],
+      },
+    ],
+  },
+]);
+
+function App() {
+  const dispatch = useDispatch<AppDispatch>();
+
+  // verify httpOnly cookies on app mount (page load / refresh)
+  useEffect(() => {
+    dispatch(checkAuth());
+  }, [dispatch]);
+
+  return <RouterProvider router={router} />;
+}
+
+export default App;
+</file>
+
+<file path="src/index.css">
+@import 'tailwindcss';
+
+@theme {
+  /* 🟠 Primary Colors (The Pulse) */
+  --color-primary: #9b3f00;
+  --color-primary-container: #ff7a2c;
+  --color-on-primary: #fff0ea;
+  --color-primary-fixed: #ff7a2c;
+  --color-on-primary-fixed: #000000;
+
+  /* 🟤 Tertiary Colors (Trust/Badges) */
+  --color-tertiary: #7a5400;
+
+  /* ⚪ Surfaces & Containers (The Layers) */
+  --color-surface: #f9f6f5; /* Base */
+  --color-surface-container-lowest: #ffffff; /* Cards */
+  --color-surface-container-low: #f3f0ef; /* Sections / Inputs */
+  --color-surface-container-high: #e5e2e1; /* Filter Chips */
+  --color-surface-container-highest: #dfdcdc; /* Secondary Buttons */
+
+  --color-secondary-container: #e2e2e2; /* Progress Bar Track */
+
+  /* 📝 Typography */
+  --color-on-surface: #2f2e2e; /* Charcoal-gray for text */
+
+  /* 🔲 Outlines */
+  --color-outline-variant: #afacac; /* Ghost Border Fallback */
+
+  /* 🔤 Fonts (The Dual-Script Dialogue) */
+  --font-headline: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Be Vietnam Pro', sans-serif;
+
+  /* 📐 Radii */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.75rem;
+  --radius-xl: 1.5rem;
+}
+
+/* 🎨 Signature Gradient (Primary CTAs & Progress Bars) */
+@utility signature-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-primary-container) 100%
+  );
+}
+
+/* ☁️ Ambient Atmosphere Shadow (Interactive Cards) */
+@utility shadow-ambient {
+  box-shadow: 0px 20px 40px rgba(47, 46, 46, 0.06);
+}
+
+/* 🪟 Glassmorphism (Floating Elements) */
+@utility glass-panel {
+  background-color: rgba(249, 246, 245, 0.7);
+  backdrop-filter: blur(24px);
+}
+
+/* Base Rules */
+body {
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+  font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-headline {
+  font-family: var(--font-headline);
+}
+</file>
+
+<file path="src/main.tsx">
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { Provider } from 'react-redux';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { store } from './store/store';
+import App from './App';
+import './index.css';
+
+const queryClient = new QueryClient();
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <Provider store={store}>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </Provider>
+  </StrictMode>,
+);
+
+// use ! to say to ts that 'root' will be in DOM and prevent error about it may be null
+</file>
+
 <file path="Dockerfile">
 FROM node:24-alpine
 
@@ -426,9 +2103,59 @@ EXPOSE 5173
 CMD ["sh", "-c", "pnpm install && pnpm dev --host 0.0.0.0 --port 5173"]
 </file>
 
+<file path="package.json">
+{
+  "name": "crowdfund-frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "@reduxjs/toolkit": "^2.11.2",
+    "@tanstack/react-query": "^5.97.0",
+    "axios": "^1.15.0",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.38.0",
+    "jwt-decode": "^4.0.0",
+    "lucide-react": "^1.8.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-hook-form": "^7.72.1",
+    "react-hot-toast": "^2.6.0",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.14.0",
+    "swiper": "^12.1.3",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@tailwindcss/vite": "^4.2.2",
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@types/react-redux": "^7.1.34",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.4"
+  }
+}
+</file>
+
 <file path=".env.example">
+VITE_ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
 VITE_BASE_URL=http://localhost:5173
-VITE_ALLOWED_HOSTS=localhost,127.0.0.1
+VITE_API_BASE_URL=http://localhost:8000/api
 </file>
 
 <file path=".github/workflows/deploy-ec2.yml">
@@ -464,6 +2191,7 @@ jobs:
 
             git -C crowdfund-frontend fetch origin dev
             git -C crowdfund-frontend reset --hard origin/dev
+            git -C crowdfund-frontend clean -fd
 
             compose() {
               if docker compose version >/dev/null 2>&1; then
@@ -476,12 +2204,11 @@ jobs:
               fi
             }
 
-            docker builder prune -af || true
-
             compose -p crowdfund up -d --build --no-deps frontend
 
-            # Remove dangling images created by rebuilds
-            docker image prune -f
+            docker builder prune -af || true
+            docker image prune -f || true
+            docker volume prune -f || true
 </file>
 
 </files>
