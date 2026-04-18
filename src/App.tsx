@@ -10,6 +10,7 @@ import Home from './pages/HomePage';
 import RegisterPage from './pages/auth/RegisterPage';
 import LoginPage from './pages/auth/LoginPage';
 import ActivatePage from './pages/auth/ActivatePage';
+import { ErrorState } from './components/ui/ErrorState';
 
 const router = createBrowserRouter([
   {
@@ -39,6 +40,16 @@ const router = createBrowserRouter([
         children: [
           //for ex: { path: 'profile', element: <ProfilePage /> },
         ],
+      },
+      // catch-all route for unhandled paths
+      {
+        path: '*',
+        element: (
+          <ErrorState
+            title="Page Lost in the Sands"
+            message="The page you're looking for doesn't exist or has been moved."
+          />
+        ),
       },
     ],
   },

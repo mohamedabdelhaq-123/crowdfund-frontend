@@ -6,7 +6,9 @@ import { logout } from '../../store/slices/authSlice';
 import toast from 'react-hot-toast';
 
 export const Layout = () => {
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user } = useSelector(
+    (state: RootState) => state.auth
+  );
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
@@ -53,7 +55,6 @@ export const Layout = () => {
             </div>
           </div>
 
-          {/* Desktop Auth Navigation */}
           <div className="hidden md:flex items-center gap-6">
             {isAuthenticated ? (
               <div className="flex items-center gap-4 bg-surface-container-low px-4 py-1.5 rounded-full border border-outline-variant/50 shadow-sm transition-all hover:shadow-md">
