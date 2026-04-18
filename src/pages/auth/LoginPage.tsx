@@ -3,12 +3,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { AlertCircle, LockOpen, MailWarning } from 'lucide-react';
+import { AlertCircle, Clock, MailWarning } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../api/client';
 import { loginSchema, LoginFormData } from '../../validation/authSchema';
 import { setCredentials } from '../../store/slices/authSlice';
 import type { AppDispatch } from '../../store/store';
+import { useSearchParams } from 'react-router-dom';
+
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -20,6 +22,9 @@ const LoginPage = () => {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
 
+
+  const [searchParams] = useSearchParams();
+  const sessionExpired = searchParams.get('reason') === 'session_expired';
   const {
     register,
     handleSubmit,
@@ -153,6 +158,13 @@ const LoginPage = () => {
                   Enter your credentials to access FundEgypt.
                 </p>
               </header>
+
+                {sessionExpired && (
+                <div className="bg-tertiary-container/30 p-4 rounded-xl text-sm flex items-center gap-3 mb-4">
+                  <Clock className="w-5 h-5 shrink-0" />
+                  <span>Your session expired. Please log in again.</span>
+                </div>
+                )}
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 {errors.root && (
