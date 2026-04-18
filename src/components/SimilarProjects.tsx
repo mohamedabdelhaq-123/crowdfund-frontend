@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useQuery } from '@tanstack/react-query';
 import { getSimilarProjects } from '../api/projects';
 import { ProjectCard } from './ProjectCard';

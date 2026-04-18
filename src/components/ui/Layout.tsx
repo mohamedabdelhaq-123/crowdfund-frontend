@@ -54,17 +54,19 @@ export const Layout = () => {
           </div>
 
           {/* Desktop Auth Navigation */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-4">
             {isAuthenticated ? (
-              <div className="flex items-center gap-4 bg-surface-container-low px-4 py-1.5 rounded-full border border-outline-variant/50 shadow-sm transition-all hover:shadow-md">
+              <div className="flex items-center gap-3">
                 <Link
                   to="/profile"
-                  className="flex items-center gap-2 text-on-surface hover:text-primary transition-colors font-headline text-sm font-semibold"
+                  className="h-10 w-10 rounded-full bg-surface-container-high overflow-hidden flex items-center justify-center hover:ring-2 hover:ring-primary/30 transition-all"
                 >
-                  <UserCircle className="w-5 h-5" />
-                  <span>Profile</span>
+                  <img
+                    src={user?.profile_pic || `https://ui-avatars.com/api/?name=${encodeURIComponent((user?.first_name || '') + '+' + (user?.last_name || ''))}&background=9b3f00&color=fff0ea&bold=true&size=80`}
+                    alt="Profile"
+                    className="h-full w-full object-cover"
+                  />
                 </Link>
-                <div className="w-[1px] h-4 bg-outline-variant/50"></div>
                 <button
                   onClick={handleLogout}
                   className="flex items-center text-on-surface-variant hover:text-primary transition-colors p-1 cursor-pointer"
