@@ -6,7 +6,9 @@ import { logout } from '../../store/slices/authSlice';
 import toast from 'react-hot-toast';
 
 export const Layout = () => {
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user } = useSelector(
+    (state: RootState) => state.auth
+  );
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
@@ -50,11 +52,17 @@ export const Layout = () => {
               >
                 How it Works
               </Link>
+              <Link
+               to="/start-a-project"
+                className="text-on-surface-variant hover:text-primary transition-colors font-headline text-sm font-semibold tracking-tight"
+              >
+                Start a Project
+              </Link>
             </div>
           </div>
 
           {/* Desktop Auth Navigation */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-6">
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
                 <Link
@@ -62,7 +70,10 @@ export const Layout = () => {
                   className="h-10 w-10 rounded-full bg-surface-container-high overflow-hidden flex items-center justify-center hover:ring-2 hover:ring-primary/30 transition-all"
                 >
                   <img
-                    src={user?.profile_pic || `https://ui-avatars.com/api/?name=${encodeURIComponent((user?.first_name || '') + '+' + (user?.last_name || ''))}&background=9b3f00&color=fff0ea&bold=true&size=80`}
+                    src={
+                      user?.profile_pic ||
+                      `https://ui-avatars.com/api/?name=${encodeURIComponent((user?.first_name || '') + '+' + (user?.last_name || ''))}&background=9b3f00&color=fff0ea&bold=true&size=80`
+                    }
                     alt="Profile"
                     className="h-full w-full object-cover"
                   />

@@ -1,27 +1,40 @@
+import React, { useState } from 'react';
 import { Project } from '../types/project';
-
+import { useNavigate } from 'react-router-dom';
 interface ProjectCardProps {
   project: Project;
 }
 
 export const ProjectCard = ({ project }: ProjectCardProps) => {
+  const [imageStatus, setImageStatus] = useState<'loading' | 'loaded' | 'error'>(
+    project.uploaded_image_url ? 'loading' : 'error'
+  );
+  const navigate = useNavigate();
+
   const progressPercent = Math.min(
     (project.current_money / project.target) * 100,
     100
   );
 
   return (
-    <div className="bg-surface-container-lowest rounded-[2rem] overflow-hidden editorial-shadow group flex flex-col h-full hover:-translate-y-2 transition-transform duration-500 cursor-pointer">
+    <button onClick={() => navigate(`/projects/${project.id}`)} className="bg-surface-container-lowest rounded-[2rem] overflow-hidden editorial-shadow group flex flex-col h-full hover:-translate-y-2 transition-transform duration-500 cursor-pointer">
       <div className="relative h-64 overflow-hidden bg-surface-container-low">
-        <img
-          src={project.uploaded_image_url}
-          alt={project.title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src =
-              'https://via.placeholder.com/400x300?text=OasisFund';
-          }}
-        />
+        {imageStatus !== 'loaded' && (
+          <div className="absolute inset-0 skeleton" />
+        )}
+        
+        {project.uploaded_image_url && (
+          <img
+            src={project.uploaded_image_url}
+            alt={project.title}
+            className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ${
+              imageStatus === 'loaded' ? 'opacity-100' : 'opacity-0'
+            }`}
+            onLoad={() => setImageStatus('loaded')}
+            onError={() => setImageStatus('error')}
+          />
+        )}
+        
         <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-primary">
           {project.category_name}
         </div>
@@ -76,6 +89,6 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
           </span>
         </div>
       </div>
-    </div>
+    </button>
   );
 };
