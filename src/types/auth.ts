@@ -4,4 +4,5 @@ export interface AuthUser {
   first_name: string;
   last_name: string;
   role: string;
+  profile_pic?: string | null;
 }

@@ -12,6 +12,8 @@ import LoginPage from './pages/auth/LoginPage';
 import ActivatePage from './pages/auth/ActivatePage';
 import { ProjectDetailsPage } from './pages/project-details/project-details';
 import { DonationPage } from './pages/project-details/donation-form';
+import ProfilePage from './pages/ProfilePage';
+
 const router = createBrowserRouter([
   {
     path: 'activate/:token',
@@ -45,7 +47,9 @@ const router = createBrowserRouter([
       {
         element: <ProtectedRoute />,
         children: [
-          //for ex: { path: 'profile', element: <ProfilePage /> },
+          { path: 'profile', element: <ProfilePage /> },
+          { path: 'profile/:id', element: <ProfilePage /> },
+          { path: 'profile/edit', element: <ProfilePage /> },
         ],
       },
     ],
