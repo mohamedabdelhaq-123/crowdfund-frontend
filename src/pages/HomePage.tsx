@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { getHomepageData } from '../api/home';
@@ -12,10 +12,12 @@ import { FilterChips } from '../components/ui/FilterChips';
 
 const HomePage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   // 🌏 URL-Driven Discovery State
   const searchQuery = searchParams.get('q') || '';
   const selectedCategory = searchParams.get('c') ? Number(searchParams.get('c')) : null;
+  const currentPage = Number(searchParams.get('page')) || 1;
 
   const {
     data: homeData,
@@ -33,15 +35,23 @@ const HomePage = () => {
     isLoading: searchLoading, 
     isError: searchError 
   } = useQuery({
-    queryKey: ['projects', 'search', searchQuery, selectedCategory],
-    queryFn: () => getProjects(searchQuery, selectedCategory),
+    queryKey: ['projects', 'search', searchQuery, selectedCategory, currentPage],
+    queryFn: () => getProjects(searchQuery, selectedCategory, currentPage),
     enabled: isFiltering,
   });
+
+  // 🚀 Auto-Scroll Logic: Move to results when filtering is active
+  useEffect(() => {
+    if (isFiltering && resultsRef.current) {
+      resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [searchQuery, selectedCategory, isFiltering]);
 
   const handleSearch = useCallback((query: string) => {
     setSearchParams((prev) => {
       if (query) prev.set('q', query);
       else prev.delete('q');
+      prev.delete('page'); // Reset to page 1 on search
       return prev;
     });
   }, [setSearchParams]);
@@ -53,9 +63,17 @@ const HomePage = () => {
       } else {
         prev.delete('c');
       }
+      prev.delete('page'); // Reset to page 1 on category change
       return prev;
     });
   }, [setSearchParams]);
+
+  const handlePageChange = (page: number) => {
+    setSearchParams((prev) => {
+      prev.set('page', page.toString());
+      return prev;
+    });
+  };
 
   const activeCategoryName = useMemo(() => {
     return selectedCategory 
@@ -108,7 +126,10 @@ const HomePage = () => {
         </div>
 
         {/* Dynamic Discovery Grid (Unified "Latest" + Search) */}
-        <section className="bg-surface-container-low -mx-4 md:-mx-8 px-4 md:px-8 py-20 rounded-[4rem] transition-all duration-700 min-h-[600px]">
+        <section 
+          ref={resultsRef}
+          className="bg-surface-container-low -mx-4 md:-mx-8 px-4 md:px-8 py-20 rounded-[4rem] transition-all duration-700 min-h-[600px]"
+        >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
             <div className="flex items-center gap-6">
                <h2 className="text-4xl md:text-5xl font-black font-headline tracking-tighter">
@@ -167,6 +188,29 @@ const HomePage = () => {
                   Clear All Filters
                 </button>
               </div>
+          )}
+
+          {/* Pagination Controls */}
+          {isFiltering && searchResults && searchResults.count > 12 && (
+             <div className="mt-20 flex justify-center gap-4">
+                <button 
+                  disabled={!searchResults.previous}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  className="px-6 py-3 rounded-full border border-outline-variant disabled:opacity-30 disabled:cursor-not-allowed hover:bg-surface-container-high transition-colors font-bold"
+                >
+                  Previous
+                </button>
+                <div className="flex items-center px-4 font-black">
+                   Page {currentPage} of {Math.ceil(searchResults.count / 12)}
+                </div>
+                <button 
+                  disabled={!searchResults.next}
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  className="px-6 py-3 rounded-full border border-outline-variant disabled:opacity-30 disabled:cursor-not-allowed hover:bg-surface-container-high transition-colors font-bold"
+                >
+                  Next
+                </button>
+             </div>
           )}
         </section>
       </section>

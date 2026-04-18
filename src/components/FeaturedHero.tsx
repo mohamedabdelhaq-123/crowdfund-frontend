@@ -1,5 +1,6 @@
 import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
+import { useNavigate } from 'react-router-dom';
 import { Autoplay, Pagination, EffectFade } from 'swiper/modules';
 import { Project } from '../types/project';
 import { Button } from './ui/Button';
@@ -12,6 +13,7 @@ interface FeaturedHeroProps {
 }
 
 export const FeaturedHero = ({ projects }: FeaturedHeroProps) => {
+  const navigate = useNavigate();
   if (!projects || projects.length === 0) return null;
 
   return (
@@ -54,10 +56,11 @@ export const FeaturedHero = ({ projects }: FeaturedHeroProps) => {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                  <Button variant="primary" className="px-10 py-4 text-lg">
-                    Support This Project
-                  </Button>
-                  <Button variant="secondary" className="bg-white/10 backdrop-blur text-white border border-white/20 hover:bg-white/20 px-10 py-4 text-lg">
+                  <Button 
+                    onClick={() => navigate(`/projects/${project.id}`)}
+                    variant="secondary" 
+                    className="bg-white/10 backdrop-blur text-white border border-white/20 hover:bg-white/20 px-10 py-4 text-lg"
+                  >
                     Read Story
                   </Button>
                 </div>
