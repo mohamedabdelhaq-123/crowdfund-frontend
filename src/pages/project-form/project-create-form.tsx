@@ -39,10 +39,13 @@ export const ProjectCreatePage = () => {
     imageFiles.forEach(img => formData.append('images', img));
     console.log('Prepared FormData:', formData); // 👈 check FormData contents before sending
     try {
-      await createProject(formData);
+      const res = await createProject(formData);
       toast.success("Project created successfully!");
-      navigate('/');
-
+      if (res && res.id) {
+        navigate(`/projects/${res.id}`);
+      } else {
+        navigate('/');
+      }
     } catch (error) {
       toast.error("Failed to create project.");
     }
@@ -135,19 +138,45 @@ export const ProjectCreatePage = () => {
           {/* Media Upload */}
           <div className="flex flex-col gap-2">
             <label className="text-sm font-bold uppercase tracking-wider text-on-surface">Project Gallery</label>
-            <div className="border-2 border-dashed border-outline-variant/30 rounded-md p-8 text-center bg-surface-container-low hover:border-primary transition-colors cursor-pointer relative">
+            <div className="border-2 border-dashed border-outline-variant/30 rounded-md p-8 text-center bg-surface-container-low hover:border-primary transition-colors cursor-pointer relative group">
                   <input
                     type="file"
                     multiple
-                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    accept="image/*"
+                    className="absolute inset-0 opacity-0 cursor-pointer z-10"
                     onChange={(e) => {
                       if (e.target.files) {
-                        setImageFiles(Array.from(e.target.files));
+                        setImageFiles(prev => [...prev, ...Array.from(e.target.files!)]);
                       }
                     }}
                   />
-                <p className="text-outline-variant font-medium text-sm">Click to upload or drag and drop project images</p>
+                  <span className="material-symbols-outlined text-4xl text-outline-variant mb-2 group-hover:text-primary transition-colors">cloud_upload</span>
+                  <p className="text-outline-variant font-medium text-sm group-hover:text-primary transition-colors">Click to upload or drag and drop project images</p>
             </div>
+            
+            {/* Image Previews */}
+            {imageFiles.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
+                {imageFiles.map((file, index) => (
+                  <div key={index} className="relative group rounded-lg overflow-hidden h-24 border border-outline-variant/20 shadow-sm">
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt={`preview ${index}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                      <button
+                        type="button"
+                        onClick={() => setImageFiles(files => files.filter((_, i) => i !== index))}
+                        className="bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 transition-transform hover:scale-110 shadow-lg"
+                      >
+                        <span className="material-symbols-outlined text-sm block">delete</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <button
