@@ -19,7 +19,6 @@ const RegisterPage = () => {
     handleSubmit,
     formState: { errors },
     setError,
-    watch,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
   });
