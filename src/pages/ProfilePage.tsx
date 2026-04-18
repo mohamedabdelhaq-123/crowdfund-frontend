@@ -19,15 +19,14 @@ function ProfilePage() {
 
   const dispatch = useDispatch<AppDispatch>();
 
-  // Data Queries
+
   const myProfileQuery = useProfile();
   const publicProfileQuery = usePublicProfile(Number(id));
   const { data: publicProjects } = usePublicProjects(Number(id));
 
-  // Determine which profile is currently active
   const { data: profile, isLoading, error } = isPublicView ? publicProfileQuery : myProfileQuery;
 
-  // Personal data queries (only relevant if not public view)
+
   const { data: projects } = useMyProjects();
   const { data: donations } = useMyDonations();
   const deleteAccount = useDeleteAccount();
@@ -125,14 +124,7 @@ function ProfilePage() {
                     </div>
                   )}
                 </div>
-                {!isPublicView && (
-                  <Link
-                    to="/profile/edit"
-                    className="absolute bottom-2 right-2 h-10 w-10 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform"
-                  >
-                    <span className="material-symbols-outlined text-xl">edit</span>
-                  </Link>
-                )}
+
               </div>
               <div className="flex-1">
                 <h1 className="text-4xl md:text-5xl font-black font-headline tracking-tighter text-on-surface mb-2">

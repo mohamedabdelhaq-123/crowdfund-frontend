@@ -202,16 +202,10 @@ const LoginPage = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <div className="flex items-center justify-between ml-1 mr-1">
+                  <div className="ml-1 mr-1">
                     <label className="text-xs font-label font-bold text-on-surface-variant uppercase tracking-wider">
                       Password
                     </label>
-                    <Link
-                      to="/forgot-password"
-                      className="text-xs text-primary font-semibold hover:underline"
-                    >
-                      Forgot password?
-                    </Link>
                   </div>
                   <input
                     className={`w-full px-4 py-3.5 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all placeholder:text-outline-variant ${errors.password ? 'ring-2 ring-error' : ''}`}
