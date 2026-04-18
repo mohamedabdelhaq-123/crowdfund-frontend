@@ -10,6 +10,8 @@ import Home from './pages/HomePage';
 import RegisterPage from './pages/auth/RegisterPage';
 import LoginPage from './pages/auth/LoginPage';
 import ActivatePage from './pages/auth/ActivatePage';
+import { ProjectDetailsPage } from './pages/project-details/project-details';
+import { DonationPage } from './pages/project-details/donation-form';
 import ProfilePage from './pages/ProfilePage';
 import { ErrorState } from './components/ui/ErrorState';
 
@@ -34,7 +36,14 @@ const router = createBrowserRouter([
         path: 'login',
         element: <LoginPage />,
       },
-
+      {
+        path:'projects/:id',
+        element:<ProjectDetailsPage />
+      },
+      {
+        path:'projects/:id/donate',
+        element:<DonationPage />
+      },
       // any route nested under this wrapper needs auth
       {
         element: <ProtectedRoute />,
