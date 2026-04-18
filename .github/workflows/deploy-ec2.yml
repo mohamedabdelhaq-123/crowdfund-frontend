@@ -30,7 +30,7 @@ jobs:
 
             git -C crowdfund-frontend fetch origin dev
             git -C crowdfund-frontend reset --hard origin/dev
-            git -C crowdfund-frontend clean -fd
+            sudo git -C crowdfund-frontend clean -fd
 
             compose() {
               if docker compose version >/dev/null 2>&1; then
