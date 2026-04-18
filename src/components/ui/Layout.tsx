@@ -41,18 +41,6 @@ export const Layout = () => {
                 Explore
               </Link>
               <Link
-                to="/impact"
-                className="text-on-surface-variant hover:text-primary transition-colors font-headline text-sm font-semibold tracking-tight"
-              >
-                Impact
-              </Link>
-              <Link
-                to="/how-it-works"
-                className="text-on-surface-variant hover:text-primary transition-colors font-headline text-sm font-semibold tracking-tight"
-              >
-                How it Works
-              </Link>
-              <Link
                to="/start-a-project"
                 className="text-on-surface-variant hover:text-primary transition-colors font-headline text-sm font-semibold tracking-tight"
               >

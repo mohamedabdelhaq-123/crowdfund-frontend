@@ -6,8 +6,22 @@ export const getProjects = async (search?: string, category?: number | null): Pr
   if (search) params.append('search', search);
   if (category) params.append('category', category.toString());
 
-  const response = await api.get<PaginatedResponse<Project>>(`/projects/?${params.toString()}`);
-  return response.data;
+  // Correctly hit the specialized Search API endpoint
+  const response = await api.get<PaginatedResponse<Project> | Project[]>(`/projects/search/?${params.toString()}`);
+  const data = response.data;
+
+  // 🛡️ Normalization Layer: Handles both paginated objects and simple arrays 
+  // to prevent grid crashes on either backend configuration.
+  if (Array.isArray(data)) {
+    return {
+      count: data.length,
+      next: null,
+      previous: null,
+      results: data,
+    };
+  }
+  
+  return data;
 };
 
 export const getSimilarProjects = async (id: number): Promise<PaginatedResponse<Project>> => {
