@@ -10,6 +10,7 @@ import Home from './pages/HomePage';
 import RegisterPage from './pages/auth/RegisterPage';
 import LoginPage from './pages/auth/LoginPage';
 import ActivatePage from './pages/auth/ActivatePage';
+import ProfilePage from './pages/ProfilePage';
 
 const router = createBrowserRouter([
   {
@@ -37,7 +38,9 @@ const router = createBrowserRouter([
       {
         element: <ProtectedRoute />,
         children: [
-          //for ex: { path: 'profile', element: <ProfilePage /> },
+          { path: 'profile', element: <ProfilePage /> },
+          { path: 'profile/:id', element: <ProfilePage /> },
+          { path: 'profile/edit', element: <ProfilePage /> },
         ],
       },
     ],

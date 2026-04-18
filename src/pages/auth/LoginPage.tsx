@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { AlertCircle, LockOpen, MailWarning } from 'lucide-react';
+import { AlertCircle, MailWarning } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../api/client';
 import { loginSchema, LoginFormData } from '../../validation/authSchema';
