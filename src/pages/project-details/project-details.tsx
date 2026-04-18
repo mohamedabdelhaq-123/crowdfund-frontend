@@ -119,9 +119,15 @@ export const ProjectDetailsPage = () => {
            
             </div>
 
-            <button  onClick ={()=>navigate(`/projects/${projectData?.id}/donate`)} className="w-full signature-gradient text-white font-bold py-4 rounded-md shadow-lg hover:opacity-90 transition-opacity mb-8">
-              Donate Now
-            </button>
+            {projectData?.status === 'canceled' || projectData?.status === 'cancelled' ? (
+              <button disabled className="w-full bg-surface-container-high text-on-surface-variant font-bold font-headline py-4 rounded-md opacity-70 cursor-not-allowed mb-8">
+                Donations Closed
+              </button>
+            ) : (
+              <button onClick={() => navigate(`/projects/${projectData?.id}/donate`)} className="w-full signature-gradient text-white font-bold py-4 rounded-md shadow-lg hover:opacity-90 transition-opacity mb-8">
+                Donate Now
+              </button>
+            )}
 
             <div className="space-y-4 border-t border-outline-variant/20 pt-6 text-sm">
               <div className="flex justify-between">

@@ -71,16 +71,31 @@ export default function MyProjectsTab({ projects, isPublicView }: { projects: Pr
                 </div>
               </div>
               <div className="mt-6 flex gap-2">
-                <Link to={`/projects/${project.id}`} className="flex-1 px-2 text-center py-3 bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors rounded-xl font-headline font-bold text-sm">
-                  {isPublicView ? 'View & Donate' : 'View Details'}
-                </Link>
-                {!isPublicView && project.status !== 'cancelled' && (
-                  <button 
-                    onClick={() => setProjectToCancel(project.id)}
-                    className="px-4 py-3 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors rounded-xl font-headline font-bold text-sm"
-                  >
-                    Cancel
-                  </button>
+                {project.status === 'canceled' || project.status === 'cancelled' ? (
+                  <>
+                    <Link to={`/projects/${project.id}`} className="flex-1 px-2 text-center py-3 bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors rounded-xl font-headline font-bold text-sm">
+                      View Details
+                    </Link>
+                    {!isPublicView && (
+                      <button disabled className="px-4 py-3 bg-red-50/50 text-red-600/50 rounded-xl font-headline font-bold text-sm opacity-50 cursor-not-allowed">
+                        Cancel
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <Link to={`/projects/${project.id}`} className="flex-1 px-2 text-center py-3 bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors rounded-xl font-headline font-bold text-sm">
+                      {isPublicView ? 'View & Donate' : 'View Details'}
+                    </Link>
+                    {!isPublicView && (
+                      <button 
+                        onClick={() => setProjectToCancel(project.id)}
+                        className="px-4 py-3 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors rounded-xl font-headline font-bold text-sm"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </div>
