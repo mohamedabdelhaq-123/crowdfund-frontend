@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ErrorState } from "../../components/ui/ErrorState";
 import { ProjectImage } from "../../types/project-details";
 import { SimilarProjects } from "../../components/SimilarProjects";
-import { ProjectCommentsSection } from "../../components/ProjectCommentsSection";
+import { ProjectCommentsSection } from "../../components/project-comments/ProjectCommentsSection";
 
 export const ProjectDetailsPage = () => {
   const { id } = useParams();
