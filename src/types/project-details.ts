@@ -17,6 +17,7 @@ export interface ProjectDetails  {
     is_reported_by_me: boolean;
     category_name: string;
     user_fullname: string;
+    user_profile_pic: string | null;
     tags_names: string[];
     avg_rate: number;
 }

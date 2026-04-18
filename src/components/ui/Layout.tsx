@@ -55,16 +55,20 @@ export const Layout = () => {
               <div className="flex items-center gap-3">
                 <Link
                   to="/profile"
-                  className="h-10 w-10 rounded-full bg-surface-container-high overflow-hidden flex items-center justify-center hover:ring-2 hover:ring-primary/30 transition-all"
+                  className="h-10 w-10 rounded-full bg-primary overflow-hidden flex items-center justify-center shadow-sm border border-outline-variant/10 hover:ring-2 hover:ring-primary/30 transition-all"
                 >
-                  <img
-                    src={
-                      user?.profile_pic ||
-                      `https://ui-avatars.com/api/?name=${encodeURIComponent((user?.first_name || '') + '+' + (user?.last_name || ''))}&background=9b3f00&color=fff0ea&bold=true&size=80`
-                    }
-                    alt="Profile"
-                    className="h-full w-full object-cover"
-                  />
+                  {user?.profile_pic ? (
+                    <img
+                      src={user.profile_pic}
+                      alt="Profile"
+                      className="h-full w-full object-cover"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  ) : (
+                    <span className="text-sm font-black text-on-primary font-headline">
+                      {user?.first_name?.[0]?.toUpperCase()}{user?.last_name?.[0]?.toUpperCase()}
+                    </span>
+                  )}
                 </Link>
                 <button
                   onClick={handleLogout}

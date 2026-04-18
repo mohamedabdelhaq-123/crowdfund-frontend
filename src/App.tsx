@@ -14,6 +14,8 @@ import { ProjectDetailsPage } from './pages/project-details/project-details';
 import { DonationPage } from './pages/project-details/donation-form';
 import ProfilePage from './pages/ProfilePage';
 import { ErrorState } from './components/ui/ErrorState';
+import { ProjectCreatePage } from './pages/project-form/project-create-form';
+import { ProjectEditForm } from './pages/project-form/project-edit-form';
 
 const router = createBrowserRouter([
   {
@@ -40,10 +42,6 @@ const router = createBrowserRouter([
         path:'projects/:id',
         element:<ProjectDetailsPage />
       },
-      {
-        path:'projects/:id/donate',
-        element:<DonationPage />
-      },
       // any route nested under this wrapper needs auth
       {
         element: <ProtectedRoute />,
@@ -51,6 +49,10 @@ const router = createBrowserRouter([
           { path: 'profile', element: <ProfilePage /> },
           { path: 'profile/:id', element: <ProfilePage /> },
           { path: 'profile/edit', element: <ProfilePage /> },
+          { path: 'projects/:id/donate', element: <DonationPage /> },
+          { path: 'start-a-project', element: <ProjectCreatePage /> },
+          { path: 'projects/:id/edit', element: <ProjectEditForm /> }
+
         ],
       },
       // catch-all route for unhandled paths
