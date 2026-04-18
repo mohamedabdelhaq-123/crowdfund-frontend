@@ -6,8 +6,12 @@ export const getProjectDetails = async (id: number): Promise<ProjectDetails> => 
   return response.data;
 };
 
-export const createProject = async (payload: FormData): Promise<ProjectDetails> => {
-  const response = await api.post<ProjectDetails>('/projects/',payload);
+export const createProject = async (formData: FormData) => {
+  const response = await api.post('/projects/', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data', 
+    },
+  });
   return response.data;
 };
 export const updateProject = async (project_id:number,payload: FormData):Promise<ProjectDetails> =>{
