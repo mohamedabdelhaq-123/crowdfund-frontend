@@ -3,6 +3,7 @@ export interface ProjectComment {
   project: number;
   user: number | string;
   user_fullname: string;
+  user_profile_pic: string | null;
   parent: number | null;
   content: string;
   is_reported_by_me: boolean;

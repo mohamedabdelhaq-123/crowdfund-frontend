@@ -79,7 +79,7 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
 
         <div className="pt-4 border-t border-surface-container-low flex justify-between items-center mt-auto">
           <div className="flex items-center gap-1 text-tertiary font-bold text-sm">
-            ⭐ {project.calculate_average_rating.toFixed(1)}
+            ⭐ {(project.avg_rate || project.calculate_average_rating || 0).toFixed(1)}
           </div>
           <span className="text-xs text-on-surface-variant font-label uppercase">
             By{' '}

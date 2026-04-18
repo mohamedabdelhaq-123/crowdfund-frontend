@@ -138,8 +138,19 @@ export const ProjectDetailsPage = () => {
 
             {/* Creator Card */}
             <div className="mt-10 bg-surface-container-low p-4 rounded-md flex items-center gap-4">
-              <div className="w-12 h-12 bg-primary rounded-full overflow-hidden">
-                <img src="https://via.placeholder.com/150" alt="" className="w-full h-full object-cover" />
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-primary flex items-center justify-center shadow-sm border border-outline-variant/10">
+                {projectData?.user_profile_pic ? (
+                  <img 
+                    src={projectData.user_profile_pic} 
+                    alt={projectData?.user_fullname} 
+                    className="w-full h-full object-cover"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
+                ) : (
+                  <span className="text-xl font-black text-on-primary font-headline">
+                    {projectData?.user_fullname?.[0]?.toUpperCase()}
+                  </span>
+                )}
               </div>
               <div>
                 <p className="text-xs text-outline-variant uppercase font-bold">Creator</p>
