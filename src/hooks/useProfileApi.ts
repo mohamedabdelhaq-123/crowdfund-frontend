@@ -58,6 +58,7 @@ export const useMyProjects = () => {
       const { data } = await api.get('/users/me/projects/');
       return data;
     },
+    refetchOnMount: 'always',
   });
 };
 
@@ -69,6 +70,7 @@ export const useMyDonations = () => {
       const { data } = await api.get('/users/me/donations/');
       return data;
     },
+    refetchOnMount: 'always',
   });
 };
 
