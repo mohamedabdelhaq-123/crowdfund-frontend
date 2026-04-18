@@ -85,7 +85,7 @@ export const CommentRow = ({
             <div className="flex items-center gap-2">
               <Button
                 type="button"
-                className="!px-4 !py-2 !text-xs"
+                className="!px-4 !py-2 !text-xs hover:!scale-100 active:!scale-100 hover:!shadow-none hover:brightness-110"
                 onClick={() => actions.onSubmitEdit(comment.id)}
                 isLoading={pending.updatingComment}
                 disabled={state.editText.trim().length === 0}
@@ -147,7 +147,7 @@ export const CommentRow = ({
             <button
               type="button"
               onClick={() => actions.onDelete(comment.id)}
-              className="text-on-surface-variant font-headline text-xs font-bold inline-flex items-center gap-1 rounded-md px-1.5 py-1 -my-1 transition-all duration-200 hover:bg-red-50 hover:text-red-600 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-on-surface-variant font-headline text-xs font-bold inline-flex items-center gap-1 transition-colors duration-150 hover:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={pending.deletingComment}
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -159,10 +159,10 @@ export const CommentRow = ({
             <button
               type="button"
               onClick={() => actions.onToggleReport(comment.id)}
-              className={`font-headline text-xs font-bold inline-flex items-center gap-1 rounded-md px-1.5 py-1 -my-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`font-headline text-xs font-bold inline-flex items-center gap-1 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed ${
                 comment.is_reported_by_me
-                  ? 'text-red-600 bg-red-50/70 hover:bg-red-100 hover:text-red-700'
-                  : 'text-on-surface-variant hover:bg-red-50 hover:text-red-600 hover:shadow-sm'
+                  ? 'text-red-600/90 hover:text-red-700'
+                  : 'text-on-surface-variant hover:text-red-600'
               }`}
               disabled={pending.reportingComment}
             >
@@ -194,7 +194,7 @@ export const CommentRow = ({
               </Button>
               <Button
                 type="button"
-                className="!px-4 !py-2 !text-xs"
+                  className="!px-4 !py-2 !text-xs hover:!scale-100 active:!scale-100 hover:!shadow-none hover:brightness-110"
                 onClick={() => actions.onSubmitReply(comment.id)}
                 isLoading={pending.creatingReply}
                 disabled={state.replyText.trim().length === 0}
