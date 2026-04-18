@@ -22,3 +22,5 @@ export interface HomepageData {
   top_rated: Project[];
   categories: Category[];
 }
+
+
