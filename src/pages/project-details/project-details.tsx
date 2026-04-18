@@ -81,7 +81,7 @@ export const ProjectDetailsPage = () => {
         {/* Left Column: Details & Comments */}
         <div className="lg:col-span-2 space-y-12">
           <section>
-            <h2 className="text-2xl font-headline font-bold mb-4">Empowering the Heart of Egypt</h2>
+            <h2 className="text-2xl font-headline font-bold mb-4">Funding Details</h2>
             <div className="prose prose-neutral text-on-surface leading-relaxed space-y-4">
               <p>{projectData?.details}</p>
             </div>
