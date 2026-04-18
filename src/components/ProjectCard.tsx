@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Project } from '../types/project';
-
+import { useNavigate } from 'react-router-dom';
 interface ProjectCardProps {
   project: Project;
 }
@@ -9,6 +9,7 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
   const [imageStatus, setImageStatus] = useState<'loading' | 'loaded' | 'error'>(
     project.uploaded_image_url ? 'loading' : 'error'
   );
+  const navigate = useNavigate();
 
   const progressPercent = Math.min(
     (project.current_money / project.target) * 100,
@@ -16,7 +17,7 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
   );
 
   return (
-    <div className="bg-surface-container-lowest rounded-[2rem] overflow-hidden editorial-shadow group flex flex-col h-full hover:-translate-y-2 transition-transform duration-500 cursor-pointer">
+    <button onClick={() => navigate(`/projects/${project.id}`)} className="bg-surface-container-lowest rounded-[2rem] overflow-hidden editorial-shadow group flex flex-col h-full hover:-translate-y-2 transition-transform duration-500 cursor-pointer">
       <div className="relative h-64 overflow-hidden bg-surface-container-low">
         {imageStatus !== 'loaded' && (
           <div className="absolute inset-0 skeleton" />
@@ -88,6 +89,6 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
           </span>
         </div>
       </div>
-    </div>
+    </button>
   );
 };

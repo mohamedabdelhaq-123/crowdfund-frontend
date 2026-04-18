@@ -55,7 +55,7 @@ export const ProjectDetailsPage = () => {
       src={image.path}
       alt={`Project ${index}`}
       className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 z-0 ${
-        index !== image_carousel_index ? "opacity-100" : "opacity-0 pointer-events-none"
+        index === image_carousel_index ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
     />
   ))}
