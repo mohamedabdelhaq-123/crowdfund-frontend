@@ -12,7 +12,7 @@ export const ProjectDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [image_carousel_index, setImageCarouselIndex] = useState(0);
-  const { data: projectData, isLoading: projectLoading, isError, error: projectError } = useQuery({
+  const { data: projectData, isLoading: projectLoading, isError } = useQuery({
     queryKey: ['project', id],
     queryFn: () => getProjectDetails(id ? parseInt(id) : 39),
   });
@@ -94,7 +94,7 @@ export const ProjectDetailsPage = () => {
             </div>
           </section>
 
-          <ProjectCommentsSection projectId={projectData?.id} />
+          <ProjectCommentsSection projectId={projectData?.id || 0} />
         </div>
 
         {/* Right Column: Donation Sidebar */}
@@ -111,11 +111,11 @@ export const ProjectDetailsPage = () => {
             <div className="w-full h-3 bg-secondary-container rounded-full mb-2">
               <div 
                 className="h-full signature-gradient rounded-full" 
-                style={{ width: `${Math.min((projectData?.current_money / projectData?.target) * 100, 100)}%` }}
+                style={{ width: `${Math.min(((projectData?.current_money || 0) / (projectData?.target || 1)) * 100, 100)}%` }}
               ></div>
             </div>
             <div className="flex justify-between text-sm font-bold mb-8">
-              <span>{Math.round((projectData?.current_money / projectData?.target) * 100)}% FUNDED</span>
+              <span>{Math.round(((projectData?.current_money || 0) / (projectData?.target || 1)) * 100)}% FUNDED</span>
            
             </div>
 
@@ -166,7 +166,7 @@ export const ProjectDetailsPage = () => {
           <h2 className="text-3xl font-headline font-bold">Similar Projects</h2>
           <button className="text-primary font-bold">Explore All</button>
         </div>
-        <SimilarProjects projectId={projectData?.id} />
+        <SimilarProjects projectId={projectData?.id || 0} />
       </div>
     </div>
   );
