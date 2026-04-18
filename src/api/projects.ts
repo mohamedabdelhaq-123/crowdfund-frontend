@@ -1,10 +1,11 @@
 import api from './client';
 import { Project, PaginatedResponse } from '../types/project';
 
-export const getProjects = async (search?: string, category?: number | null): Promise<PaginatedResponse<Project>> => {
+export const getProjects = async (search?: string, category?: number | null, page: number = 1): Promise<PaginatedResponse<Project>> => {
   const params = new URLSearchParams();
   if (search) params.append('search', search);
   if (category) params.append('category', category.toString());
+  if (page > 1) params.append('page', page.toString());
 
   // Correctly hit the specialized Search API endpoint
   const response = await api.get<PaginatedResponse<Project> | Project[]>(`/projects/search/?${params.toString()}`);
