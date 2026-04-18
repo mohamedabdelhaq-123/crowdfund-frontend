@@ -15,6 +15,7 @@ import { DonationPage } from './pages/project-details/donation-form';
 import ProfilePage from './pages/ProfilePage';
 import { ErrorState } from './components/ui/ErrorState';
 import { ProjectCreatePage } from './pages/project-form/project-create-form';
+import { ProjectEditForm } from './pages/project-form/project-edit-form';
 
 const router = createBrowserRouter([
   {
@@ -50,6 +51,7 @@ const router = createBrowserRouter([
           { path: 'profile/edit', element: <ProfilePage /> },
           { path: 'projects/:id/donate', element: <DonationPage /> },
           { path: 'start-a-project', element: <ProjectCreatePage /> },
+          { path: 'projects/:id/edit', element: <ProjectEditForm /> }
 
         ],
       },
