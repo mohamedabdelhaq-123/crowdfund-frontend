@@ -51,11 +51,9 @@ export default function MyProjectsTab({ projects, isPublicView }: { projects: Pr
                   <span className="bg-tertiary/10 text-tertiary px-3 py-1 rounded-full text-xs font-bold font-headline">{Math.round(progress)}%</span>
                 </div>
               </div>
-              {isPublicView && (
-                <Link to={`/projects/${project.id}`} className="mt-6 text-center py-3 bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors rounded-xl font-headline font-bold text-sm">
-                  View & Donate
-                </Link>
-              )}
+              <Link to={`/projects/${project.id}`} className="mt-6 text-center py-3 bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors rounded-xl font-headline font-bold text-sm">
+                {isPublicView ? 'View & Donate' : 'View Details'}
+              </Link>
             </div>
           );
         })}

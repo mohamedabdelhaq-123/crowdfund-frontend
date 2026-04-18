@@ -1,5 +1,5 @@
 import { formatDistanceToNow } from 'date-fns';
-import { Edit3, Flag, Reply, Trash2, UserCircle2 } from 'lucide-react';
+import { Edit3, Flag, Reply, Trash2 } from 'lucide-react';
 import type { ProjectComment } from '../../types/comment';
 import { Button } from '../ui';
 
@@ -55,8 +55,19 @@ export const CommentRow = ({
     <div
       className={`flex gap-4 ${isReply ? 'pl-8 border-l-2 border-outline-variant/20' : ''}`}
     >
-      <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center flex-shrink-0">
-        <UserCircle2 className="w-5 h-5 text-on-surface-variant" />
+      <div className="w-10 h-10 rounded-full overflow-hidden bg-primary flex items-center justify-center flex-shrink-0 shadow-sm border border-outline-variant/10">
+        {comment.user_profile_pic ? (
+          <img 
+            src={comment.user_profile_pic} 
+            alt={comment.user_fullname} 
+            className="w-full h-full object-cover"
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+          />
+        ) : (
+          <span className="text-sm font-black text-on-primary font-headline">
+            {comment.user_fullname?.[0]?.toUpperCase()}
+          </span>
+        )}
       </div>
 
       <div className="flex-1 min-w-0">
