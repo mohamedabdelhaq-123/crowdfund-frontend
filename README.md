@@ -1,4 +1,4 @@
-# OasisFund Frontend
+# Crowdfund Frontend
 
 The React frontend for **OasisFund** (also branded as **FundEgypt**) — an Egyptian crowdfunding platform. Built with React 19, TypeScript, and TailwindCSS v4, it communicates with the Django REST API backend exclusively via httpOnly cookies, with no tokens ever stored in `localStorage`.
 
@@ -24,22 +24,22 @@ The React frontend for **OasisFund** (also branded as **FundEgypt**) — an Egyp
 
 ## Tech Stack
 
-| Category | Library / Tool |
-|---|---|
-| UI Framework | React 19 + TypeScript |
-| Styling | Tailwind CSS v4 |
-| Routing | React Router v7 |
-| Server State | TanStack Query v5 |
-| Client State | Redux Toolkit |
-| Forms | React Hook Form + Zod |
-| HTTP Client | Axios (with interceptors) |
-| Animations | Framer Motion |
-| Carousel | Swiper |
-| Icons | Lucide React + Google Material Symbols |
-| Toasts | react-hot-toast |
-| Date Utilities | date-fns |
-| Package Manager | pnpm |
-| Build Tool | Vite 8 |
+| Category        | Library / Tool                         |
+| --------------- | -------------------------------------- |
+| UI Framework    | React 19 + TypeScript                  |
+| Styling         | Tailwind CSS v4                        |
+| Routing         | React Router v7                        |
+| Server State    | TanStack Query v5                      |
+| Client State    | Redux Toolkit                          |
+| Forms           | React Hook Form + Zod                  |
+| HTTP Client     | Axios (with interceptors)              |
+| Animations      | Framer Motion                          |
+| Carousel        | Swiper                                 |
+| Icons           | Lucide React + Google Material Symbols |
+| Toasts          | react-hot-toast                        |
+| Date Utilities  | date-fns                               |
+| Package Manager | pnpm                                   |
+| Build Tool      | Vite 8                                 |
 
 ---
 
@@ -65,6 +65,7 @@ src/
 ## Pages & Features
 
 ### Home Page (`/`)
+
 - **Featured Hero** — full-screen Swiper carousel with fade effect and autoplay, showing featured projects
 - **Category Gallery** — responsive grid of all categories with Unsplash cover images; clicking a category filters the project grid
 - **Top Rated** — section showing the highest-rated projects (hidden when a search/filter is active)
@@ -75,6 +76,7 @@ src/
 - **Normalization layer** — handles both paginated `{count, results}` objects and bare arrays from the search endpoint without crashing
 
 ### Project Details Page (`/projects/:id`)
+
 - Image gallery with a custom bullet-based carousel
 - Star rating display (rounded to nearest integer)
 - Funding progress bar with percentage
@@ -85,32 +87,38 @@ src/
 - **Similar Projects** section (fetched by shared tags)
 - **Community Voices** — full comment section (see below)
 
-### Donation Page (`/projects/:id/donate`) — *Protected*
+### Donation Page (`/projects/:id/donate`) — _Protected_
+
 - Quick-select preset amounts (50, 100, 500 EGP)
 - Free-entry amount input with Zod validation (minimum 10 EGP)
 - Navigates back to the project page on success
 
 ### Auth Pages
+
 - **Register** (`/register`) — full registration form with optional profile picture upload (preview before submit), Egyptian phone number validation, password confirmation, multipart/form-data submission
 - **Login** (`/login`) — email/password form; shows a "Resend Activation" inline button if the backend returns `not_activated: true`; displays a session-expired banner when redirected with `?reason=session_expired`
 - **Activate** (`/activate/:token`) — standalone page (no layout/navbar) that handles 4 states: `loading`, `success`, `already`, `expired`, `invalid`; the expired state shows a resend form with a 120-second client-side cooldown matching the backend's 2-minute rate limit
 
-### Profile Page (`/profile`) — *Protected*
+### Profile Page (`/profile`) — _Protected_
+
 Three-tab layout with a persistent sidebar on desktop:
 
 - **My Projects tab** — paginated grid (6 per page) of own projects with funding progress, status badge, and a cancel button that triggers a confirmation modal before calling the API
 - **My Donations tab** — card grid of all donations with project name, amount, and date
 - **Edit Profile tab** — inline form with live avatar preview; sends `multipart/form-data` if a new image is selected, otherwise JSON; account deletion is at the bottom of this tab behind a password confirmation modal
 
-### Public Profile Page (`/profile/:id`) — *Protected*
+### Public Profile Page (`/profile/:id`) — _Protected_
+
 Displays another user's avatar, name, country, Facebook link, and their public (pending) projects in a read-only `MyProjectsTab` with "View & Donate" links.
 
-### Project Create Form (`/start-a-project`) — *Protected*
+### Project Create Form (`/start-a-project`) — _Protected_
+
 - Title, category dropdown (fetched from API), details, target amount, date range, comma-separated tags, and multi-image upload with live previews and per-image delete
 - Navigates to the new project's detail page on success
 
-### Project Edit Form (`/projects/:id/edit`) — *Protected*
-Shares the same form structure as the create form. *(See Known Limitations.)*
+### Project Edit Form (`/projects/:id/edit`) — _Protected_
+
+Shares the same form structure as the create form. _(See Known Limitations.)_
 
 ---
 
@@ -149,15 +157,15 @@ All API calls go through a single Axios instance in `src/api/client.ts`, configu
 
 The API is split into domain files:
 
-| File | Responsibility |
-|---|---|
-| `client.ts` | Axios instance + 401 interceptor |
-| `home.ts` | Homepage feed data |
-| `projects.ts` | Project list, search, similar projects |
-| `projects-details.ts` | Project CRUD, image management |
-| `category.ts` | Category list |
-| `comments.ts` | Comment CRUD + reporting |
-| `donations.ts` | Donate to a project |
+| File                  | Responsibility                         |
+| --------------------- | -------------------------------------- |
+| `client.ts`           | Axios instance + 401 interceptor       |
+| `home.ts`             | Homepage feed data                     |
+| `projects.ts`         | Project list, search, similar projects |
+| `projects-details.ts` | Project CRUD, image management         |
+| `category.ts`         | Category list                          |
+| `comments.ts`         | Comment CRUD + reporting               |
+| `donations.ts`        | Donate to a project                    |
 
 ---
 
@@ -166,10 +174,12 @@ The API is split into domain files:
 All forms use **React Hook Form** + **Zod** for schema-based validation.
 
 **Auth schemas** (`authSchema.ts`):
+
 - `registerSchema` — validates name, email, Egyptian phone regex (`/^01[0125][0-9]{8}$/`), password min-length 8, password confirmation match, optional birthdate/Facebook/country
 - `loginSchema` — email and non-empty password
 
 **Project schema** (`projectSchema.ts`):
+
 - Required title (max 255), details, positive target amount, start date, end date
 - Cross-field refinement: end date must be after start date
 - Optional tags (string — split by comma before submission) and images (max 5 files)
@@ -256,13 +266,54 @@ The Dockerfile runs the **Vite development server** (not a production build) ins
 
 ```bash
 # Build the image
-docker build -t oasisfund-frontend .
+docker build -t crowdfund-frontend .
 
 # Run the container
-docker run -p 5173:5173 oasisfund-frontend
+docker run -p 5173:5173 crowdfund-frontend
 ```
 
 The container uses `pnpm dev --host 0.0.0.0 --port 5173` as its entrypoint, making it accessible from outside the container.
+
+For multi-service orchestration (frontend + backend), keep `docker-compose.yml` in a separate infra/deployment repo (or directly on the server), since frontend and backend live in separate repositories.
+
+**Note:** Both `crowdfund-backend` and `crowdfund-frontend` repositories must exist in the same parent directory as the `docker-compose.yml` file for the build contexts (`./crowdfund-backend` and `./crowdfund-frontend`) to work correctly.
+
+Example shared `docker-compose.yml`:
+
+```yaml
+services:
+  backend:
+    build:
+      context: ./crowdfund-backend
+    container_name: crowdfund-backend
+    env_file:
+      - ./crowdfund-backend/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./crowdfund-backend:/app
+
+  frontend:
+    build:
+      context: ./crowdfund-frontend
+    container_name: crowdfund-frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./crowdfund-frontend:/app
+      - frontend_node_modules:/app/node_modules
+
+volumes:
+  frontend_node_modules:
+```
+
+Run from the directory that contains both repos and `docker-compose.yml`:
+
+```bash
+docker compose up -d --build
+```
 
 ---
 
@@ -273,6 +324,7 @@ Deployments are automated via **GitHub Actions** (`.github/workflows/deploy-ec2.
 **Trigger:** Push to the `dev` branch, or manual `workflow_dispatch`.
 
 **Pipeline steps:**
+
 1. SSH into the EC2 instance
 2. Pull the latest code from `origin/dev` and hard reset
 3. Rebuild and restart only the `frontend` Docker service (`docker compose up -d --build --no-deps frontend`)
@@ -282,11 +334,11 @@ A shared file lock (`/tmp/crowdfund-deploy.lock`) serializes frontend and backen
 
 **Required GitHub Secrets:**
 
-| Secret | Description |
-|---|---|
-| `EC2_HOST` | EC2 public IP or domain |
-| `EC2_USER` | SSH username (e.g., `ubuntu`) |
-| `EC2_SSH_KEY` | Private SSH key |
+| Secret             | Description                                 |
+| ------------------ | ------------------------------------------- |
+| `EC2_HOST`         | EC2 public IP or domain                     |
+| `EC2_USER`         | SSH username (e.g., `ubuntu`)               |
+| `EC2_SSH_KEY`      | Private SSH key                             |
 | `EC2_PROJECT_PATH` | Absolute path to project root on the server |
 
 ---
@@ -328,12 +380,10 @@ src/
 └── validation/              → Zod schemas (authSchema, projectSchema)
 ```
 
-
 ## Team Members
-  Rana Mohamed Abd Elhalim
-  Mohamed Khaled Hussein
-  Mohamed Sameh Mostafa Mohamed Elkholy
-  Mohamed Abdelhaq Mohamed
-  Andrew Emad Morris Philps
 
-
+Rana Mohamed Abd Elhalim
+Mohamed Khaled Hussein
+Mohamed Sameh Mostafa Mohamed Elkholy
+Mohamed Abdelhaq Mohamed
+Andrew Emad Morris Philps
